@@ -113,8 +113,8 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto mt-16 pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between text-xs text-gray-400 gap-4">
         <p>© 2026 Swiftab. All rights reserved.</p>
         <div className="flex gap-6">
-          <a href="#" className="hover:text-gray-900">Privacy Policy</a>
-          <a href="#" className="hover:text-gray-900">Terms of Service</a>
+          <a href="/privacy-policy" className="hover:text-gray-900">Privacy Policy</a>
+          <a href="/terms-of-service" className="hover:text-gray-900">Terms of Service</a>
           <a href="#" className="hover:text-gray-900">Cookies Settings</a>
         </div>
       </div>

@@ -188,15 +188,12 @@ export default function TermsOfService() {
           <CardContent>
             <p>If you have any questions about these Terms of Service, please contact us at:</p>
             <div className="mt-4 space-y-1">
-              <p>
-                <strong>Email:</strong> legal@swiftab.com
+               <p>
+                <strong>Phone:</strong>+254745194060
               </p>
               <p>
-                <strong>Phone:</strong> 1-800-SWIFTAB
-              </p>
-              <p>
-                <strong>Address:</strong> SwiftTab Legal Department, 123 Restaurant Row, Food City, FC 12345
-              </p>
+                <strong>Address:</strong> Nairobi, Kenya
+              </p>    
             </div>
           </CardContent>
         </Card>

@@ -262,13 +262,10 @@ export default function PrivacyPolicy() {
             <p>If you have any questions about this Privacy Policy or our data practices, please contact us at:</p>
             <div className="mt-4 space-y-1">
               <p>
-                <strong>Email:</strong> privacy@swiftab.com
+                <strong>Phone:</strong>+254745194060
               </p>
               <p>
-                <strong>Phone:</strong> 1-800-SWIFTAB
-              </p>
-              <p>
-                <strong>Address:</strong> SwiftTab Privacy Officer, 123 Restaurant Row, Food City, FC 12345
+                <strong>Address:</strong> Nairobi, Kenya
               </p>
             </div>
             <p className="mt-4">
