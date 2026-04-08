@@ -262,14 +262,14 @@ export default function PrivacyPolicy() {
             <p>If you have any questions about this Privacy Policy or our data practices, please contact us at:</p>
             <div className="mt-4 space-y-1">
               <p>
-                <strong>Phone:</strong>+254745194060
+                <strong>Email:</strong>support@swiftab.co.ke
               </p>
               <p>
                 <strong>Address:</strong> Nairobi, Kenya
               </p>
             </div>
             <p className="mt-4">
-              <strong>Data Protection Officer:</strong> dpo@swiftab.com
+              <strong>Data Protection Officer:</strong> support@swiftab.com
             </p>
           </CardContent>
         </Card>

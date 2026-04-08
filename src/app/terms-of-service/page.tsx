@@ -189,8 +189,9 @@ export default function TermsOfService() {
             <p>If you have any questions about these Terms of Service, please contact us at:</p>
             <div className="mt-4 space-y-1">
                <p>
-                <strong>Phone:</strong>+254745194060
+                <strong>Email:</strong>support@swiftab.co.ke
               </p>
+
               <p>
                 <strong>Address:</strong> Nairobi, Kenya
               </p>    
