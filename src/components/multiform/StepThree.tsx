@@ -1,146 +1,117 @@
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Receipt, CreditCard, Banknote, Smartphone } from "lucide-react";
 
 interface StepThreeProps {
-  formData: {
-    location: string;
-    latitude: string;
-    longitude: string;
-  };
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  errors: {
-    location?: string;
-    latitude?: string;
-    longitude?: string;
-  };
-  touched: {
-    location?: boolean;
-    latitude?: boolean;
-    longitude?: boolean;
+  formik: {
+    values: { taxRate: number; serviceCharge: number; paymentMethods: string[]; };
+    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    setFieldValue: (field: string, value: any) => void;
+    errors: { taxRate?: string; serviceCharge?: string; paymentMethods?: string; };
+    touched: { taxRate?: boolean; serviceCharge?: boolean; paymentMethods?: boolean; };
   };
 }
 
-interface MapboxFeature {
-  place_name: string;
-  center: [number, number]; // [longitude, latitude]
-}
+const PAYMENT_OPTIONS = [
+  { id: "M-Pesa", icon: Smartphone },
+  { id: "Credit Card", icon: CreditCard },
+  { id: "Debit Card", icon: CreditCard },
+  { id: "Cash", icon: Banknote }
+];
 
-export function StepThree({
-  formData,
-  handleInputChange,
-  errors,
-  touched,
-}: StepThreeProps) {
-  const [suggestions, setSuggestions] = useState<MapboxFeature[]>([]);
-
-  const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    handleInputChange(e);
-
-    if (value.length > 2) {
-      try {
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-            value
-          )}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}`
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch suggestions");
-        }
-
-        const data = await response.json();
-        setSuggestions(data.features || []);
-      } catch (error) {
-        console.error("Error fetching location suggestions:", error);
-        setSuggestions([]);
-      }
+export function StepThree({ formik }: StepThreeProps) {
+  const handlePaymentToggle = (method: string) => {
+    const current = formik.values.paymentMethods;
+    if (current.includes(method)) {
+      formik.setFieldValue("stepThree.paymentMethods", current.filter((m) => m !== method));
     } else {
-      setSuggestions([]);
+      formik.setFieldValue("stepThree.paymentMethods", [...current, method]);
     }
   };
-  
-  const selectSuggestion = (feature: MapboxFeature) => {
-    const [longitude, latitude] = feature.center;
-    setSuggestions([]);
-    handleInputChange({
-      target: { name: "stepThree.location", value: feature.place_name },
-    } as React.ChangeEvent<HTMLInputElement>);
-    handleInputChange({
-      target: { name: "stepThree.latitude", value: latitude.toString() },
-    } as React.ChangeEvent<HTMLInputElement>);
-    handleInputChange({
-      target: { name: "stepThree.longitude", value: longitude.toString() },
-    } as React.ChangeEvent<HTMLInputElement>);
-  };
-
-  // const selectSuggestion = (feature: MapboxFeature) => {
-  //   const [longitude, latitude] = feature.center;
-  //   setSuggestions([]);
-  
-  //   formik.setFieldValue("stepThree.location", feature.place_name);
-  //   formik.setFieldValue("stepThree.latitude", latitude);
-  //   formik.setFieldValue("stepThree.longitude", longitude);
-  // };
-  
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <Label htmlFor="location">Location</Label>
-        <Input
-          id="location"
-          name="stepThree.location"
-          value={formData.location}
-          onChange={handleLocationChange}
-          placeholder="Enter restaurant address"
-        />
-        {touched.location && errors.location && (
-          <p className="text-red-500 text-sm">{errors.location}</p>
-        )}
-        {suggestions.length > 0 && (
-          <ul className="suggestions-list border border-gray-300 rounded-md mt-2">
-            {suggestions.map((feature, index) => (
-              <li
-                key={index}
-                className="p-2 hover:bg-gray-200 cursor-pointer"
-                onClick={() => selectSuggestion(feature)}
+        <h3 className="text-lg font-bold text-gray-900 mb-1">Financials & Payments</h3>
+        <p className="text-sm text-gray-500 mb-6">Configure your tax settings and accepted payment methods.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 p-5 rounded-2xl border border-gray-100">
+        <div className="space-y-2">
+          <Label htmlFor="taxRate" className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+            <Receipt className="w-4 h-4 text-gray-400" /> Default VAT / Tax Rate (%)
+          </Label>
+          <div className="relative">
+            <Input
+              name="stepThree.taxRate"
+              type="number"
+              value={formik.values.taxRate}
+              onChange={formik.handleChange}
+              className="h-12 bg-white border-gray-200 focus-visible:ring-[#008080]/20 focus-visible:border-[#008080] pr-8"
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
+          </div>
+          {formik.touched.taxRate && formik.errors.taxRate && (
+            <p className="text-red-500 text-xs font-bold mt-1">{formik.errors.taxRate}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="serviceCharge" className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+            <Receipt className="w-4 h-4 text-gray-400" /> Service Charge (%)
+          </Label>
+          <div className="relative">
+            <Input
+              name="stepThree.serviceCharge"
+              type="number"
+              value={formik.values.serviceCharge}
+              onChange={formik.handleChange}
+              className="h-12 bg-white border-gray-200 focus-visible:ring-[#008080]/20 focus-visible:border-[#008080] pr-8"
+              placeholder="e.g. 10 (Optional)"
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
+          </div>
+          {formik.touched.serviceCharge && formik.errors.serviceCharge && (
+            <p className="text-red-500 text-xs font-bold mt-1">{formik.errors.serviceCharge}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-3 pt-4 border-t border-gray-100">
+        <Label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Accepted Payment Methods</Label>
+        <div className="grid grid-cols-2 gap-4">
+          {PAYMENT_OPTIONS.map((method) => {
+            const isSelected = formik.values.paymentMethods.includes(method.id);
+            return (
+              <label 
+                key={method.id} 
+                className={`flex items-center space-x-3 p-4 border rounded-xl cursor-pointer transition-all duration-200 ${
+                  isSelected 
+                    ? "border-[#008080] bg-[#008080]/5 ring-1 ring-[#008080]/20" 
+                    : "border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300"
+                }`}
               >
-                {feature.place_name}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-      <div>
-        <Label htmlFor="latitude">Latitude</Label>
-        <Input
-          id="latitude"
-          name="stepThree.latitude"
-          type="number"
-          step="any"
-          value={formData.latitude}
-          onChange={handleInputChange}
-          placeholder="Enter latitude"
-        />
-        {touched.latitude && errors.latitude && (
-          <p className="text-red-500 text-sm">{errors.latitude}</p>
-        )}
-      </div>
-      <div>
-        <Label htmlFor="longitude">Longitude</Label>
-        <Input
-          id="longitude"
-          name="stepThree.longitude"
-          type="number"
-          step="any"
-          value={formData.longitude}
-          onChange={handleInputChange}
-          placeholder="Enter longitude"
-        />
-        {touched.longitude && errors.longitude && (
-          <p className="text-red-500 text-sm">{errors.longitude}</p>
+                <input
+                  type="checkbox"
+                  className="hidden"
+                  checked={isSelected}
+                  onChange={() => handlePaymentToggle(method.id)}
+                />
+                <div className={`h-5 w-5 rounded border flex items-center justify-center transition-colors ${
+                  isSelected ? "bg-[#008080] border-[#008080]" : "border-gray-300 bg-white"
+                }`}>
+                  {isSelected && <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                </div>
+                <method.icon className={`w-5 h-5 ${isSelected ? 'text-[#008080]' : 'text-gray-400'}`} />
+                <span className={`font-bold text-sm ${isSelected ? 'text-[#008080]' : 'text-gray-700'}`}>
+                  {method.id}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+        {formik.touched.paymentMethods && formik.errors.paymentMethods && (
+          <p className="text-red-500 text-xs font-bold mt-1">{formik.errors.paymentMethods}</p>
         )}
       </div>
     </div>

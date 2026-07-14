@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSignUp } from "@/hooks/authhook/authhooks";
-import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Eye, EyeOff, ChevronRight } from "lucide-react";
 import { FullScreenLoader } from "../Loading/FullScreen";
+import toast from "react-hot-toast";
 
 interface AdminSignUpFormProps {
   onClose?: () => void;
@@ -44,7 +44,6 @@ export function SignUpForm({ onClose, restaurantName = "Swiftab" }: AdminSignUpF
   const [loading, setLoading] = useState(false);
   
   const router = useRouter();
-  const { toast } = useToast();
   const signUpMutation = useSignUp();
 
   const handleSubmit = async (values: any) => {
@@ -53,23 +52,13 @@ export function SignUpForm({ onClose, restaurantName = "Swiftab" }: AdminSignUpF
       const { confirmPassword, ...submitData } = values;
       await signUpMutation.mutateAsync(submitData);
 
-      toast({
-        title: "Registration Successful!",
-        description: "Your administrator account has been created.",
-        variant: "default",
-      });
+      toast.success("Registration Successful!");
 
       if (onClose) onClose();
       setTimeout(() => {
         router.push("/signin");
       }, 1500);
     } catch (err: any) {
-      toast({
-        title: "Registration Error",
-        description: err.message || "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-        
-      });
       setLoading(false);
     }
   };

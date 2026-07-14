@@ -1,6 +1,7 @@
 import { deleteWaiter } from "@/lib/api";
 import { DeleteResponse, ErrorResponse } from "@/types/deletemenu";
 import { useMutation, UseMutationResult, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 interface DeleteWaiter {
   waiterId: string;
@@ -17,11 +18,13 @@ export function useDeleteWaiter(): UseMutationResult<
       return deleteWaiter(waiterId);
     },
     onSuccess: (data: DeleteResponse) => {
-      console.log("Waiter deleted successfully", data);
+      toast.success(data.message);
       queryClient.invalidateQueries({ queryKey: ["waiters"] });
     },
     onError: (error: ErrorResponse) => {
-      console.error("deleted waiter error:", error.message);
+      toast.error(
+        error.message || "An unexpected error occurred. Please try again."
+      );
     },
   });
 }

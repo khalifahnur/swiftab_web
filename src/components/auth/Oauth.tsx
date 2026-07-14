@@ -56,7 +56,7 @@ export default function AuthPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/50 rounded-2xl flex items-center justify-center">
+              <div className="w-16 h-16 bg-linear-to-br from-primary to-primary/50 rounded-2xl flex items-center justify-center">
                 <Image
                   src="/swiftab/logo.png"
                   width={50}

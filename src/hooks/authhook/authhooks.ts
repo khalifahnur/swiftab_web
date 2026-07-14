@@ -9,6 +9,7 @@ import {
 import { loginAdmin, signUpAdmin, signUpWaiter } from "@/lib/api";
 import apiClient from "@/lib/axios";
 import { useAuth } from "@/components/auth/AuthContext";
+import toast from "react-hot-toast";
 
 export function useLogin(): UseMutationResult<
   AuthResponse,
@@ -25,12 +26,9 @@ export function useLogin(): UseMutationResult<
       }, 1000);
     },
     onError: (error: ErrorResponse) => {
-      console.error(
-        `Login error (${error.statusCode || "Unknown"}): ${error.message}`,
+     toast.error(
+        error.message || "An unexpected error occurred. Please try again."
       );
-      if (error.details) {
-        console.error("Additional error details:", error.details);
-      }
     },
   });
 }
@@ -42,11 +40,10 @@ export function useSignUp(): UseMutationResult<
 > {
   return useMutation<AuthResponse, ErrorResponse, AuthData>({
     mutationFn: signUpAdmin,
-    onSuccess: () => {
-      console.log("Sign-up successful:");
-    },
     onError: (error: ErrorResponse) => {
-      console.error("Sign-up error:", error.message);
+      toast.error(
+        error.message || "An unexpected error occurred. Please try again."
+      );
     },
   });
 }
@@ -66,11 +63,13 @@ export function useWaiterSignUp(): UseMutationResult<
 > {
   return useMutation<AuthWaiterResponse, ErrorResponse, Authwaiter>({
     mutationFn: signUpWaiter,
-    onSuccess: () => {
-      console.log("Sign-up waiter successful:");
+    onSuccess: (data:AuthWaiterResponse) => {
+      toast.success(data.message);
     },
     onError: (error: ErrorResponse) => {
-      console.error("Sign-up waiter error:", error.message);
+      toast.error(
+        error.message || "An unexpected error occurred. Please try again."
+      );
     },
   });
 }

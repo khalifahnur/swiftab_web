@@ -40,14 +40,15 @@ export default function Page() {
       </div>
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-16">
         <div className="w-full max-w-md flex flex-col justify-center">
-          <div className="flex lg:hidden items-center justify-center gap-2 mb-10">
-            <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center text-white font-bold italic">
-              S
+          <div className="flex items-center justify-center gap-2 ">
+              <Image
+                src="/assets/logo/logo2.png"
+                alt="swiftab"
+                width={200}
+                height={100}
+                className=" md:h-24 md:w-auto transition-transform duration-300 hover:scale-105"
+              />
             </div>
-            <span className="text-2xl font-bold text-gray-900 tracking-tight">
-              Swiftab
-            </span>
-          </div>
 
           <SignUpForm />
         </div>

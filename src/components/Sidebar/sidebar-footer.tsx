@@ -62,7 +62,7 @@ export default function SideBarFooter() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               side="top"
-              className="w-[--radix-popper-anchor-width]"
+              className="w-(--radix-popper-anchor-width)"
             >
               <DropdownMenuItem>
                 <Link href={"/accounts"} className="w-full">

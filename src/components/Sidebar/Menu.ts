@@ -7,7 +7,9 @@ import {
   Users,
   ChartNetwork,
   Grid3x3,
-  CalendarRange
+  CalendarRange,
+  Settings2,
+  List
 } from "lucide-react";
 
 interface SidebarItem {
@@ -18,10 +20,10 @@ interface SidebarItem {
 }
 
 const menuItems: SidebarItem[] = [
-  { icon: LayoutDashboard, title: "Dashboard", url: "/dash" },
+  { icon: LayoutDashboard, title: "Dashboard", url: "/home" },
   { icon: ChartNetwork, title: "Report", url: "/analytics" },
-  {icon:CalendarRange,title:"Reservations",url:'/reservations'},
-  { icon: ListOrdered, title: "Orders", url: "/order-line" },
+  {icon:List,title:"Reservations",url:'/reservations'},
+  { icon: ListOrdered, title: "Orders", url: "/orders" },
 
   {
     icon: Utensils,
@@ -38,14 +40,9 @@ const menuItems: SidebarItem[] = [
     ],
   },
   {
-    icon: Users,
-    title: "Customers",
-    url: "/customers",
-    // children: [
-    //   { icon: Users, title: "Review", url: "/customers/review" },
-    //   { icon: Users, title: "Reservation List", url: "/customers/reservation" },
-    //   { icon: Users, title: "Customers", url: "/customers/loyal" },
-    // ],
+    icon: Settings2,
+    title: "Settings",
+    url: "/settings",
   },
 ];
 

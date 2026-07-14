@@ -6,7 +6,8 @@ import {
 } from "@/types/layoutinfo";
 import { TableItem, TableResponse } from "@/types/table";
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
+
 
 export function useSaveLayoutInfo(): UseMutationResult<
   LayoutResponse,
@@ -42,12 +43,14 @@ export function useSaveTable(): UseMutationResult<
   TableItem[]
 > {
   return useMutation<TableResponse, Error, TableItem[]>({
-    mutationFn: (tableArray) => saveTableLayout(tableArray), // Send array
+    mutationFn: (tableArray) => saveTableLayout(tableArray),
     onSuccess: () => {
-      console.log("Table Layout updated successfully");
+      toast.success("Table Layout updated successfully");
     },
     onError: (error: Error) => {
-      console.error("Error saving table layout:", error.message);
+       toast.error(
+        error.message || "An unexpected error occurred. Please try again."
+      );
     },
   });
 }

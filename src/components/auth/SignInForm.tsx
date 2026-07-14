@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLogin } from "@/hooks/authhook/authhooks";
 import { useEffect, useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { FullScreenLoader } from "../Loading/FullScreen";
 import { Eye, EyeOff, ChevronRight } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface AdminSignInFormProps {
   onToggleView?: () => void;
@@ -34,26 +34,15 @@ export function SignInForm({
 
   const router = useRouter();
   const signInMutation = useLogin();
-  const { toast } = useToast();
+
 
   useEffect(() => {
     if (signInMutation.isSuccess) {
-      toast({
-        title: "Welcome Back!",
-        description: "Successfully logged into your management dashboard.",
-        variant: "default",
-      });
+      toast.success(
+        "Welcome Back! Successfully logged into your management dashboard."
+      );
       setLoading(true);
-      router.replace("/dash");
-    }
-
-    if (signInMutation.isError) {
-      const errorMessage = signInMutation.error?.message;
-      toast({
-        title: "Authentication Error",
-        description: errorMessage || "Please check your credentials and try again.",
-        variant: "destructive",
-      });
+      router.replace("/home");
     }
   }, [signInMutation.isSuccess, signInMutation.isError, signInMutation.error, toast, router]);
 

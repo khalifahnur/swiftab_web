@@ -61,7 +61,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (isError) {
-      console.error("Failed to fetch user:", error);
       queryClient.setQueryData(["userInfo"], null);
     }
   }, [isError, error, queryClient]);

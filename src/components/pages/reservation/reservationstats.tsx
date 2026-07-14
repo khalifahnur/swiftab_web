@@ -28,32 +28,41 @@ export function ReservationStats({ reservations }: ReservationStatsProps) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      <Card className="border-none shadow-sm bg-white">
+      <Card className="border-gray-100 shadow-sm bg-white hover:shadow-md transition-shadow duration-200">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-gray-500">Total Reservations</CardTitle>
-          <CalendarDays className="h-4 w-4 text-blue-500" />
+          <div className="h-10 w-10 rounded-full bg-[#008080]/10 flex items-center justify-center">
+            <CalendarDays className="h-5 w-5 text-[#008080]" />
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-gray-900">{totalReservations}</div>
+          <div className="text-3xl font-bold text-gray-900">{totalReservations}</div>
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-sm bg-white">
+      <Card className="border-gray-100 shadow-sm bg-white hover:shadow-md transition-shadow duration-200">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-gray-500">Total Guests</CardTitle>
-          <Users className="h-4 w-4 text-indigo-500" />
+          <div className="h-10 w-10 rounded-full bg-[#008080]/10 flex items-center justify-center">
+             <Users className="h-5 w-5 text-[#008080]" />
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-gray-900">{totalGuests}</div>
+          <div className="text-3xl font-bold text-gray-900">{totalGuests}</div>
         </CardContent>
       </Card>
-      <Card className="border-none shadow-sm bg-white">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">Active & Confirmed</CardTitle>
-          <Activity className="h-4 w-4 text-green-500" />
+
+      <Card className="border-[#008080]/20 shadow-sm bg-[#008080]/5 relative overflow-hidden">
+        {/* Subtle decorative accent */}
+        <div className="absolute top-0 right-0 w-16 h-16 bg-[#008080]/10 rounded-bl-full -mr-4 -mt-4"></div>
+        <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
+          <CardTitle className="text-sm font-medium text-[#008080]">Active & Confirmed</CardTitle>
+          <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+             <Activity className="h-5 w-5 text-[#008080]" />
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-600">{activeReservations}</div>
+        <CardContent className="relative z-10">
+          <div className="text-3xl font-bold text-[#008080]">{activeReservations}</div>
         </CardContent>
       </Card>
     </div>

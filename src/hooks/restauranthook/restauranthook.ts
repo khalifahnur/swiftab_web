@@ -4,6 +4,7 @@ import {
   RestaurantResponse,
 } from "@/types/restaurant";
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 export function useAddRestaurant(): UseMutationResult<
   RestaurantResponse,
@@ -15,13 +16,15 @@ export function useAddRestaurant(): UseMutationResult<
       return AddRestaurant(formData);
     },
     onSuccess: (data: RestaurantResponse) => {
-      console.log("Restaurant created successfully", data);
+     toast.success(data.message);
       if (data) {
         localStorage.setItem("RestaurantData", JSON.stringify(data));
       }
     },
     onError: (error: ErrorResponse) => {
-      console.error("Restaurant setup error:", error.message);
+       toast.error(
+        error.message || "An unexpected error occurred. Please try again."
+      );
     },
   });
 }

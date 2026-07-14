@@ -20,11 +20,11 @@ export function TimelineGrid() {
   return (
     <div className="absolute inset-0">
       {/* Vertical time markers */}
-      <div className="grid grid-cols-[auto,1fr] divide-y divide-border">
+      <div className="grid grid-cols-[auto_1fr] divide-y divide-border">
         {hours.map((hour) => (
           <div
             key={hour}
-            className="grid grid-cols-[auto,1fr] divide-x divide-border"
+            className="grid grid-cols-[auto_1fr] divide-x divide-border"
           >
             <div className="sticky left-0 -mt-2.5 w-16 bg-background pr-2 text-right text-sm text-muted-foreground">
               {formatTime(hour * 60)}

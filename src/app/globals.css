@@ -1,4 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import 'tailwindcss';
+
 
 @plugin 'tailwindcss-animate';
 
@@ -73,14 +75,6 @@
   }
 }
 
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 
 @layer base {
   *,
@@ -90,12 +84,6 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
   }
-}
-
-.bg-grid-pattern {
-  background-size: 25px 25px;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
 }
 
 @layer base {
@@ -214,16 +202,115 @@
   }
 }
 
-/* export const color = {
-  navy:'#003366',
-  green:'#008080',
-  white:'#fff',
-  graywhite:'#f7f8f8',
-  gray:'#cdd5d7',
-  black:'#000'
-} */
 
 
-.oswald {
-  font-family: var(--font-oswald);
+@theme {
+  --color-paper: #FFFFFF;
+  --color-paper-dim: #F8F9FB;
+  --color-paper-line: #E5E7EB;
+  
+  --color-ink: #111827;
+  --color-ink-soft: #4B5563;
+  --color-ink-faint: #6B7280;
+  
+  --color-teal: #008080;
+  --color-teal-bright: #009999;
+  --color-teal-deep: #004D4D;
+  
+  --color-void: #111827;
+  --color-void-panel: #1F2937;
+  --color-void-panel-2: #374151;
+  
+  --color-line: #E5E7EB;
+  --color-line-strong: #D1D5DB;
+  --color-line-void: #374151;
+  
+  --color-paper-text: #F8F9FB;
+  --color-paper-text-soft: #9CA3AF;
+  
+  --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, monospace;
+
+
+  --animate-marquee: marquee 35s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 35s linear infinite;
 }
+
+@layer base {
+  html {
+    scroll-behavior: auto;
+  }
+  body {
+    @apply bg-paper text-ink font-body antialiased overflow-x-hidden m-0;
+  }
+  ::selection {
+    @apply bg-teal text-white;
+  }
+}
+
+@layer components {
+  .container-custom {
+    @apply max-w-[1240px] mx-auto px-8;
+  }
+  
+  .btn {
+    @apply relative inline-flex items-center justify-center gap-2 px-[24px] py-[12px] rounded-lg font-body font-medium text-[0.9375rem] whitespace-nowrap transition-all duration-200;
+  }
+  .btn span {
+    @apply relative z-10;
+  }
+  .btn-primary {
+    @apply bg-teal text-white shadow-sm hover:bg-teal-deep hover:shadow-md;
+  }
+  .btn-ghost {
+    @apply bg-transparent border border-line-strong text-ink hover:border-teal hover:bg-teal/5;
+  }
+  .btn-ghost-light {
+    @apply bg-transparent border border-white/30 text-paper hover:bg-white hover:text-ink;
+  }
+  .btn-lg {
+    @apply px-8 py-3 text-base;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 font-body text-sm font-semibold tracking-wide uppercase text-teal mb-4;
+  }
+  
+  .section-head {
+    @apply max-w-[640px] mb-16;
+  }
+  .section-head h2 {
+    @apply font-display font-bold text-[clamp(2rem,3.6vw,2.85rem)] leading-[1.15] tracking-tight text-ink mb-4;
+  }
+  .section-head p {
+    @apply text-lg leading-[1.6] text-ink-soft;
+  }
+
+  .floating-card {
+    @apply absolute rounded-xl bg-white border border-line shadow-xl p-6;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-line-strong rounded-full;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-faint;
+  }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+

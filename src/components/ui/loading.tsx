@@ -15,7 +15,7 @@ export const LoadingSpinner = ({ className, desc = "Loading..." }: { className?:
         
         <div className="absolute inset-[-8px] border-2 border-teal-500/20 rounded-full animate-ping" style={{ animationDuration: '2s' }}></div>
         
-        <div className="relative flex items-center justify-center h-16 w-16 bg-gradient-to-tr from-teal-600 to-teal-400 rounded-full shadow-lg shadow-teal-500/30">
+        <div className="relative flex items-center justify-center h-16 w-16 bg-linear-to-tr from-teal-600 to-teal-400 rounded-full shadow-lg shadow-teal-500/30">
           <UtensilsCrossed className="h-7 w-7 text-white drop-shadow-md" />
         </div>
       </div>

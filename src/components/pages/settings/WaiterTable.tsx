@@ -48,36 +48,43 @@ export default function WaiterTable() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="bg-gray-50/50 border-b border-gray-100 px-6 py-5 flex justify-between items-center">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 leading-none mb-1">
-            Active Staff
-          </h2>
-          <p className="text-xs text-gray-500 font-medium">
-            Manage your restaurant floor team
-          </p>
+      {/* Header Section */}
+      <div className="bg-white border-b border-gray-100 px-6 py-5 flex justify-between items-center sticky top-0 z-10">
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex h-10 w-10 rounded-xl bg-[#008080]/10 items-center justify-center shrink-0">
+            <Users className="h-5 w-5 text-[#008080]" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 leading-none mb-1.5">
+              Active Staff
+            </h2>
+            <p className="text-sm text-gray-500 font-medium">
+              Manage your restaurant floor team
+            </p>
+          </div>
         </div>
         {!isLoading && !isError && (
-          <Badge variant="secondary" className="bg-white text-gray-600 shadow-sm border-gray-200">
+          <Badge className="bg-[#008080]/10 text-[#008080] hover:bg-[#008080]/20 border-0 shadow-none font-bold px-3 py-1 text-sm">
             {waiters.length} Total
           </Badge>
         )}
       </div>
 
       <div className="flex-1 p-0">
+        {/* Loading State */}
         {isLoading && (
-          <div className="p-6 space-y-4">
+          <div className="p-6 space-y-0">
             {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+              <div key={item} className="flex items-center justify-between py-5 border-b border-gray-50 last:border-0 px-2">
                 <div className="space-y-2">
-                  <Skeleton className="h-5 w-32 bg-gray-100" />
-                  <Skeleton className="h-4 w-24 bg-gray-100" />
+                  <Skeleton className="h-5 w-32 bg-gray-100 rounded" />
+                  <Skeleton className="h-4 w-24 bg-gray-100 rounded" />
                 </div>
                 <div className="space-y-2 hidden md:block">
-                  <Skeleton className="h-5 w-40 bg-gray-100" />
-                  <Skeleton className="h-4 w-24 bg-gray-100" />
+                  <Skeleton className="h-5 w-40 bg-gray-100 rounded" />
+                  <Skeleton className="h-4 w-24 bg-gray-100 rounded" />
                 </div>
-                <Skeleton className="h-8 w-8 rounded-md bg-gray-100" />
+                <Skeleton className="h-9 w-9 rounded-lg bg-gray-100" />
               </div>
             ))}
           </div>
@@ -85,23 +92,26 @@ export default function WaiterTable() {
 
         {/* Error State */}
         {isError && (
-          <div className="p-12 flex flex-col items-center justify-center text-center">
-            <AlertCircle className="h-10 w-10 text-red-400 mb-3" />
-            <h3 className="text-base font-semibold text-gray-900">Failed to load staff</h3>
-            <p className="text-sm text-gray-500 mt-1 max-w-sm">
-              {(error as Error).message || "There was a problem communicating with the server."}
+          <div className="p-16 flex flex-col items-center justify-center text-center">
+            <div className="h-16 w-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
+              <AlertCircle className="h-8 w-8 text-red-500" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900">Failed to load staff</h3>
+            <p className="text-sm text-gray-500 mt-1.5 max-w-sm leading-relaxed">
+              {(error as Error).message || "There was a problem communicating with the server. Please try refreshing."}
             </p>
           </div>
         )}
 
+        {/* Empty State */}
         {!isLoading && !isError && waiters.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-            <div className="h-14 w-14 rounded-full bg-gray-50 flex items-center justify-center mb-4 border border-gray-100">
-              <Users className="h-6 w-6 text-gray-400" />
+          <div className="flex flex-col items-center justify-center py-24 text-center px-6">
+            <div className="h-20 w-20 rounded-full bg-[#008080]/5 flex items-center justify-center mb-5">
+              <Users className="h-10 w-10 text-[#008080]/40" />
             </div>
-            <h3 className="text-base font-semibold text-gray-900">No waiters registered</h3>
-            <p className="text-sm text-gray-500 max-w-sm mt-1">
-              Add a staff member using the form to give them access.
+            <h3 className="text-xl font-bold text-gray-900">No waiters registered</h3>
+            <p className="text-base text-gray-500 max-w-sm mt-2 leading-relaxed">
+              Add a staff member using the form to give them access to the mobile POS.
             </p>
           </div>
         )}
@@ -110,34 +120,37 @@ export default function WaiterTable() {
         {!isLoading && !isError && waiters.length > 0 && (
           <div className="overflow-x-auto">
             <Table className="min-w-full">
-              <TableHeader className="bg-gray-50/30">
+              <TableHeader className="bg-gray-50/50">
                 <TableRow className="hover:bg-transparent border-b-gray-100">
-                  <TableHead className="font-semibold text-gray-600 pl-6 w-[35%]">Staff Member</TableHead>
-                  <TableHead className="font-semibold text-gray-600 w-[35%]">Contact Info</TableHead>
-                  <TableHead className="font-semibold text-gray-600 hidden xl:table-cell">Joined</TableHead>
-                  <TableHead className="text-right font-semibold text-gray-600 pr-6">Action</TableHead>
+                  <TableHead className="font-semibold text-gray-500 pl-6 h-12 w-[40%]">Staff Member</TableHead>
+                  <TableHead className="font-semibold text-gray-500 h-12 w-[35%]">Contact Info</TableHead>
+                  <TableHead className="font-semibold text-gray-500 h-12 hidden xl:table-cell">Joined</TableHead>
+                  <TableHead className="text-right font-semibold text-gray-500 h-12 pr-6">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {waiters.map((waiter) => (
-                  <TableRow key={waiter._id} className="hover:bg-gray-50/80 transition-colors border-b-gray-50 last:border-0">
-                    <TableCell className="pl-6 py-4">
-                      <div className="font-semibold text-gray-900">
+                  <TableRow 
+                    key={waiter._id} 
+                    className="hover:bg-gray-50/80 transition-colors border-b-gray-50 last:border-0 group"
+                  >
+                    <TableCell className="pl-6 py-5">
+                      <div className="font-bold text-gray-900 group-hover:text-[#008080] transition-colors text-base">
                         {waiter.firstname} {waiter.lastname}
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-[10px] font-mono text-gray-500 bg-gray-50 px-1.5 py-0 border-gray-200">
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <Badge variant="outline" className="text-[10px] font-mono text-gray-500 bg-white px-2 py-0.5 border-gray-200 uppercase tracking-wider">
                           ID: ...{waiter._id.slice(-6)}
                         </Badge>
                       </div>
                     </TableCell>
                     
-                    <TableCell className="py-4">
-                      <div className="text-sm text-gray-900 font-medium">{waiter.email}</div>
-                      <div className="text-xs text-gray-500 mt-1">{waiter.phoneNumber}</div>
+                    <TableCell className="py-5">
+                      <div className="text-sm text-gray-900 font-semibold">{waiter.email}</div>
+                      <div className="text-sm text-gray-500 mt-1 font-medium">{waiter.phoneNumber}</div>
                     </TableCell>
                     
-                    <TableCell className="py-4 text-sm text-gray-600 hidden xl:table-cell">
+                    <TableCell className="py-5 text-sm text-gray-500 font-medium hidden xl:table-cell">
                       {new Date(waiter.createdAt).toLocaleDateString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -145,12 +158,12 @@ export default function WaiterTable() {
                       })}
                     </TableCell>
                     
-                    <TableCell className="text-right pr-6 py-4">
+                    <TableCell className="text-right pr-6 py-5">
                       <Button
                         onClick={() => handleDelete(waiter._id)}
                         variant="ghost"
                         size="icon"
-                        className="text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        className="text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors h-9 w-9 rounded-lg"
                         title="Remove Waiter"
                       >
                         <Trash2 className="h-4 w-4" />

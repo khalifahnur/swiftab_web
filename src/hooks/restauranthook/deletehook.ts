@@ -1,6 +1,7 @@
 import { deleteMenu } from "@/lib/api";
 import { DeleteResponse, ErrorResponse } from "@/types/deletemenu";
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 interface DeleteMenu {
   menuType: string;
@@ -17,10 +18,12 @@ export function useDeleteMenu(): UseMutationResult<
       return deleteMenu(menuType, itemId);
     },
     onSuccess: (data: DeleteResponse) => {
-      console.log("Menu deleted successfully", data);
+      toast.success(data.message);
     },
     onError: (error: ErrorResponse) => {
-      console.error("deleted menu error:", error.message);
+       toast.error(
+        error.message || "An unexpected error occurred. Please try again."
+      );
     },
   });
 }

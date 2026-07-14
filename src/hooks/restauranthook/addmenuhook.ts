@@ -1,10 +1,10 @@
 import { addMenu } from "@/lib/api";
 import { ErrorResponse, MenuResponse } from "@/types/addmenu";
-import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import { useMutation, UseMutationResult, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
-// Define the type for the mutation variables
 interface AddMenuVariables {
-  data: FormData; // Updated to expect FormData
+  data: FormData; 
   menuType: string;
 }
 
@@ -12,17 +12,20 @@ export function useAddMenu(): UseMutationResult<
   MenuResponse,
   ErrorResponse,
   AddMenuVariables
-> {
+> { 
+  const queryClient = useQueryClient();
   return useMutation<MenuResponse, ErrorResponse, AddMenuVariables>({
     mutationFn: ({ data, menuType }: AddMenuVariables) => {
-      return addMenu(data, menuType); // Call your API with destructured variables
+      return addMenu(data, menuType); 
     },
     onSuccess: (data) => {
-      console.log("Menu item added successfully:", data);
-      window.location.reload();
+      toast.success(data.message);
+      queryClient.invalidateQueries({ queryKey: ["menu"] });
     },
     onError: (error) => {
-      console.error("Error adding menu item:", error.message);
+     toast.error(
+        error.message || "An unexpected error occurred. Please try again."
+      );
     },
   });
 }

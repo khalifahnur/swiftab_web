@@ -1,12 +1,12 @@
 "use client";
 
-import { SidebarInset } from "@/components/ui/sidebar";
-import { Header } from "./Header";
-import { AppSidebar } from "../Sidebar/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useAuth } from "../auth/AuthContext";
 import { RestaurantSetupModal } from "../multiform/Container";
 import { useEffect, useState } from "react";
 import { FullScreenLoader } from "../Loading/FullScreen";
+import { AppSidebar } from "../Sidebar/app-sidebar";
+import { Header } from "../Sidebar/Header";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isNewUser, setIsNewUser] = useState(false);
@@ -21,26 +21,29 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   if (isLoading || !user) {
-    return (
-      <FullScreenLoader />
-    );
+    return <FullScreenLoader />;
   }
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row w-full">
-      <AppSidebar />
-      <SidebarInset className="flex flex-1 flex-col">
-        <main>
-          <Header  />
-          <div className="flex-1 w-full overflow-auto p-4">{children}</div>
-        </main>
-      </SidebarInset>
-      {isNewUser && (
-        <RestaurantSetupModal
-          isOpen={isModalOpen}
-          onOpenChange={setIsModalOpen}
-        />
-      )}
-    </div>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-[#004c4c] text-white overflow-hidden">
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex flex-col h-full w-full">
+            <Header />
+            <div className="flex-1 w-full overflow-y-hidden">
+              {children}
+            </div>
+          </div>
+        </SidebarInset>
+
+        {isNewUser && (
+          <RestaurantSetupModal
+            isOpen={isModalOpen}
+            onOpenChange={setIsModalOpen}
+          />
+        )}
+      </div>
+    </SidebarProvider>
   );
 }
