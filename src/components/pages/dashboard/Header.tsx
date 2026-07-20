@@ -133,7 +133,7 @@ export default function HeaderDashboard() {
         <div className="h-6 w-px bg-gray-200 hidden sm:block mx-1"></div>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger>
             <Button
               variant="ghost"
               className="relative h-10 rounded-full pl-2 pr-1.5 hover:bg-gray-50 transition-colors"

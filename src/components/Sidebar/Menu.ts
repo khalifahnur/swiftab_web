@@ -1,15 +1,12 @@
 import {
-  LucideIcon,
   LayoutDashboard,
-  ListOrdered,
-  Table2,
-  Utensils,
-  Users,
-  ChartNetwork,
-  Grid3x3,
-  CalendarRange,
-  Settings2,
-  List
+  TrendingUp,
+  CalendarCheck,
+  ClipboardList,
+  ConciergeBell,
+  LayoutTemplate,
+  Settings,
+  type LucideIcon,
 } from "lucide-react";
 
 interface SidebarItem {
@@ -20,30 +17,13 @@ interface SidebarItem {
 }
 
 const menuItems: SidebarItem[] = [
-  { icon: LayoutDashboard, title: "Dashboard", url: "/home" },
-  { icon: ChartNetwork, title: "Report", url: "/analytics" },
-  {icon:List,title:"Reservations",url:'/reservations'},
-  { icon: ListOrdered, title: "Orders", url: "/orders" },
-
-  {
-    icon: Utensils,
-    title: "Manage Dishes",
-    url: "/dishes",
-  },
-  {
-    icon: Table2,
-    title: "Manage Tables",
-    url: "#",
-    children: [
-      { icon: Grid3x3, title: "Floor Plan", url: "/tables/floorplan" },
-      { icon: Table2, title: "Grid", url: "/tables/grid" },
-    ],
-  },
-  {
-    icon: Settings2,
-    title: "Settings",
-    url: "/settings",
-  },
+  { icon: LayoutDashboard, title: "Overview", url: "/home" },
+  { icon: TrendingUp, title: "Analytics", url: "/analytics" },
+  { icon: CalendarCheck, title: "Reservations", url: "/reservations" },
+  { icon: ClipboardList, title: "Live Orders", url: "/orders" },
+  { icon: ConciergeBell, title: "Menu & Dishes", url: "/dishes" },
+  { icon: LayoutTemplate, title: "Floor Plan", url: "/tables/floorplan" },
+  { icon: Settings, title: "Settings", url: "/settings" },
 ];
 
 export default menuItems;

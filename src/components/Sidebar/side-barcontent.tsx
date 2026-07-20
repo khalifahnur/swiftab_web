@@ -40,7 +40,6 @@ export function SideBarContent() {
               <div key={item.title}>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    asChild
                     isActive={
                       pathname === item.url ||
                       pathname.startsWith(`${item.url}/`)
@@ -66,7 +65,7 @@ export function SideBarContent() {
                     open={openGroups.includes(item.title)}
                     onOpenChange={() => toggleGroup(item.title)}
                   >
-                    <CollapsibleTrigger asChild>
+                    <CollapsibleTrigger>
                       <div></div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
@@ -75,7 +74,6 @@ export function SideBarContent() {
                           {item.children.map((subItem) => (
                             <SidebarMenuItem key={subItem.title}>
                               <SidebarMenuButton
-                                asChild
                                 isActive={
                                   pathname === subItem.url ||
                                   pathname.startsWith(`${subItem.url}/`)

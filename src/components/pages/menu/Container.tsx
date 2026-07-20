@@ -28,7 +28,6 @@ import CreateItemSheet from "./Create";
 import Image from "next/image";
 import { fetchMenu } from "@/hooks/restauranthook/fetchmenuhook";
 import { useDeleteMenu } from "@/hooks/restauranthook/deletehook";
-import { toast } from "@/hooks/use-toast";
 import { useEditMenuItem } from "@/hooks/restauranthook/editmenuhook";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -121,19 +120,8 @@ export default function MenuManager() {
 
   useEffect(() => {
     if (deleteMutation.isSuccess) {
-      toast({
-        title: "Item Deleted",
-        description: "The menu item was removed successfully.",
-      });
       setIsDeleteDialogOpen(false);
       setItemToDelete(null);
-    }
-    if (deleteMutation.isError && deleteMutation.error) {
-      toast({
-        title: "Error",
-        description: deleteMutation.error.message || "Failed to delete item.",
-        variant: "destructive",
-      });
     }
   }, [deleteMutation.isSuccess, deleteMutation.isError, deleteMutation.error]);
 

@@ -10,7 +10,6 @@ export interface KpiTrend {
   sparkline: { value: number }[];
 }
 
-// MATCH THE BACKEND: changed from OrdersOverTimePoint
 export interface WeeklyRevenuePoint {
   day: string;
   revenue: number;
@@ -51,7 +50,6 @@ export interface DashboardStats {
     reservations: KpiTrend;
     guests: KpiTrend;
   };
-  // MATCH THE BACKEND: Changed from ordersOverTime
   weeklyRevenue: WeeklyRevenuePoint[];
   areaOccupancy: AreaOccupancy[];
   topItems: TopItem[];
@@ -63,16 +61,13 @@ export async function fetchDashboardStats(
   period: DashboardPeriod = "monthly",
 ): Promise<DashboardStats> {
   try {
-    // FIX: Pass the period as a query parameter so the backend can use it
-    const response = await apiClient.get(`/restaurant/dashboard/stats?period=${period}`);
+    const response = await apiClient.get("/admin/dashboard");
     return response.data;
   } catch (error: any) {
     throw new Error("Network error or no response from server.");
   }
 }
 
-// FIX: Assuming your apiClient automatically attaches the auth token (which holds the restaurantId),
-// you only need to trigger refetches when the period changes.
 export function useDashboardStats(period: DashboardPeriod = "monthly") {
   return useQuery<DashboardStats>({
     queryKey: ["dashboard-stats", period],

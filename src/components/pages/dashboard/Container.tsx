@@ -44,7 +44,6 @@ import { fetchOrders } from "@/hooks/orderhook/fetchorder";
 import {
   useDashboardStats,
   type DashboardPeriod,
-  type OrdersOverTimePoint,
   type AreaOccupancy as AreaOccupancyPoint,
   type TopItem,
   type PaymentMethodBreakdown,
@@ -52,13 +51,7 @@ import {
   WeeklyRevenuePoint,
 } from "@/hooks/dashboardhook/useDashboard";
 
-// ----------------------------------------------------------------------------
-// Types — aligned with the actual Order schema. The previous local type had
-// `orderId`, `status: "Served"|"Not-served"`, `paid`, and `takenBy`, none of
-// which exist on the real model (it's `orderStatus`, `paymentStatus`,
-// `paymentMethod`, `servedBy`) — `order.orderId` in particular was rendering
-// as undefined in the table since that field was never populated.
-// ----------------------------------------------------------------------------
+
 export interface OrderItem {
   _id: string;
   name: string;
@@ -83,9 +76,6 @@ export interface Order {
   createdAt: string;
 }
 
-// ----------------------------------------------------------------------------
-// Shared config
-// ----------------------------------------------------------------------------
 type KpiColor = "indigo" | "rose" | "emerald" | "violet";
 
 const KPI_THEME: Record<KpiColor, { chipBg: string; iconColor: string; hex: string }> = {
@@ -117,9 +107,7 @@ const formatCurrency = (amount: number) =>
     amount || 0,
   );
 
-// ----------------------------------------------------------------------------
-// KPI card
-// ----------------------------------------------------------------------------
+
 function KpiCard({
   title,
   value,
@@ -275,10 +263,10 @@ function OrdersTrendCard({
                   boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
                   fontWeight: 500,
                 }}
-                formatter={(value: number, name: string) => [
-                  name === "Revenue" ? formatCurrency(value) : value,
-                  name,
-                ]}
+                // formatter={(value: number, name: string) => [
+                //   name === "Revenue" ? formatCurrency(value) : value,
+                //   name,
+                // ]}
               />
               <Bar yAxisId="left" dataKey="orders" name="Orders" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={22} />
               <Line
@@ -497,15 +485,8 @@ function PaymentMethodsCard({ methods, isLoading }: { methods?: PaymentMethodBre
   );
 }
 
-// ----------------------------------------------------------------------------
-// Main component
-// ----------------------------------------------------------------------------
-export default function Dashboard({ restaurantId }: { restaurantId: string }) {
-  // restaurantId should come from wherever you resolve the current admin's
-  // restaurant — a route param, an admin auth store, etc.
+export default function Dashboard() {
   const [period, setPeriod] = React.useState<DashboardPeriod>("monthly");
-  
-  // 1. Call the hook to fetch the data
   const { data: stats, isLoading: statsLoading } = useDashboardStats(period);
   const realtimeData = useSocketData("realTimeData");
 

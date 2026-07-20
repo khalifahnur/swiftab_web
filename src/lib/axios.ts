@@ -13,7 +13,7 @@ apiClient.interceptors.request.use((config) => {
   if (typeof document !== 'undefined') {
     const token = document.cookie
       .split("; ")
-      .find((row) => row.startsWith("admin_auth=="))
+      .find((row) => row.startsWith("access_token=="))
       ?.split("=")[1];
 
     if (token) {

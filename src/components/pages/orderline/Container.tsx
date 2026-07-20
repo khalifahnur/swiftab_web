@@ -5,13 +5,14 @@ import {
   Search,
   AlertCircle,
   CheckCircle2,
-  Clock,
   XCircle,
   ListOrdered,
   UtensilsCrossed,
   CalendarClock,
   CreditCard,
-  Banknote
+  Banknote,
+  Receipt,
+  Printer
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,12 +27,16 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { fetchOrders } from "@/hooks/orderhook/fetchorder";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export interface MenuItem {
   _id: string;
@@ -59,6 +64,7 @@ export interface Order {
 export default function OrdersContainer() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [activeTab, setActiveTab] = React.useState("all");
+  const [selectedOrder, setSelectedOrder] = React.useState<Order | null>(null);
 
   const { data, error, isPending } = useQuery<{ orders: Order[] }>({
     queryKey: ["orders"],
@@ -71,6 +77,7 @@ export default function OrdersContainer() {
     return orders.filter(
       (order) =>
         order.orderId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order._id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.items.some((item) =>
           item.name.toLowerCase().includes(searchQuery.toLowerCase())
         ) ||
@@ -78,25 +85,25 @@ export default function OrdersContainer() {
     );
   }, [orders, searchQuery]);
 
-  // Updated logic to handle the new Payment and Completed states
   const getFilteredOrdersByStatus = React.useCallback(
     (status: string) => {
       if (status === "all") return filteredOrders;
       if (status === "preparing") return filteredOrders.filter((o) => o.orderStatus === "placed");
       if (status === "payment") return filteredOrders.filter((o) => o.orderStatus === "ready_to_pay" || (o.orderStatus === "served" && o.paid === "Unpaid"));
       if (status === "completed") return filteredOrders.filter((o) => o.orderStatus === "completed" || (o.orderStatus === "served" && o.paid === "Paid"));
-      if (status === "cancelled") return filteredOrders.filter((o) => o.orderStatus === "cancelled");
       return filteredOrders;
     },
     [filteredOrders]
   );
+
+  const getCount = (status: string) => getFilteredOrdersByStatus(status).length;
 
   const calculateOrderTotal = (order: Order): number => {
     return order.items.reduce((total, item) => total + item.cost * item.quantity, 0);
   };
 
   const formatPrice = (price: number) => {
-    return (price).toLocaleString("en-KE", {
+    return price.toLocaleString("en-KE", {
       style: "currency",
       currency: "KES",
       minimumFractionDigits: 0,
@@ -109,8 +116,8 @@ export default function OrdersContainer() {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-KE', { 
       year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
+      month: 'short',
+      day: 'numeric',
       hour: 'numeric', 
       minute: 'numeric',
       hour12: true 
@@ -169,9 +176,12 @@ export default function OrdersContainer() {
 
   return (
     <div className="w-full flex-1 p-4 md:p-8 bg-gray-50/50 min-h-screen font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Metrics Section */}
+      <div className="max-w-7xl mx-auto space-y-6">
+      
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 z-10 relative">
+          <h1 className="text-2xl font-bold text-gray-900">Order Management</h1>
+        </div>
+
         <div>
           {!isPending && (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
@@ -230,44 +240,50 @@ export default function OrdersContainer() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden z-10 relative">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-5 border-b border-gray-100">
-              <TabsList className="h-11 bg-gray-50/80 p-1 w-full xl:w-auto overflow-x-auto justify-start border border-gray-100">
-                <TabsTrigger 
-                  value="all" 
-                  className="rounded-md text-sm px-5 py-2 data-[state=active]:bg-white data-[state=active]:text-[#008080] data-[state=active]:shadow-sm transition-all"
-                >
-                  All Orders
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="preparing" 
-                  className="rounded-md text-sm px-5 py-2 data-[state=active]:bg-white data-[state=active]:text-[#008080] data-[state=active]:shadow-sm transition-all"
-                >
-                  Preparing
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="payment" 
-                  className="rounded-md text-sm px-5 py-2 data-[state=active]:bg-white data-[state=active]:text-[#008080] data-[state=active]:shadow-sm transition-all"
-                >
-                  Awaiting Payment
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="completed" 
-                  className="rounded-md text-sm px-5 py-2 data-[state=active]:bg-white data-[state=active]:text-[#008080] data-[state=active]:shadow-sm transition-all"
-                >
-                  Completed
-                </TabsTrigger>
-              </TabsList>
+<div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-5 border-b border-gray-100 bg-white">
+  <div className="w-full xl:w-auto overflow-x-hidden pb-1 xl:pb-0 scrollbar-hide">
+    <TabsList className="h-11 bg-gray-100/80 p-1 w-max xl:w-auto border border-gray-200/50">
+      <TabsTrigger 
+        value="all" 
+        className="rounded-md text-sm px-4 py-2 data-[state=active]:bg-white data-[state=active]:text-[#008080] data-[state=active]:shadow-sm transition-all"
+      >
+        All Orders
+        <Badge variant="secondary" className="ml-2 bg-gray-100 text-gray-600 border-none shadow-none">{getCount("all")}</Badge>
+      </TabsTrigger>
+      <TabsTrigger 
+        value="preparing" 
+        className="rounded-md text-sm px-4 py-2 data-[state=active]:bg-white data-[state=active]:text-[#008080] data-[state=active]:shadow-sm transition-all"
+      >
+        Preparing
+        <Badge variant="secondary" className="ml-2 bg-gray-100 text-gray-600 border-none shadow-none">{getCount("preparing")}</Badge>
+      </TabsTrigger>
+      <TabsTrigger 
+        value="payment" 
+        className="rounded-md text-sm px-4 py-2 data-[state=active]:bg-white data-[state=active]:text-[#008080] data-[state=active]:shadow-sm transition-all"
+      >
+        Awaiting Payment
+        <Badge variant="secondary" className="ml-2 bg-gray-100 text-gray-600 border-none shadow-none">{getCount("payment")}</Badge>
+      </TabsTrigger>
+      <TabsTrigger 
+        value="completed" 
+        className="rounded-md text-sm px-4 py-2 data-[state=active]:bg-white data-[state=active]:text-[#008080] data-[state=active]:shadow-sm transition-all"
+      >
+        Completed
+        <Badge variant="secondary" className="ml-2 bg-gray-100 text-gray-600 border-none shadow-none">{getCount("completed")}</Badge>
+      </TabsTrigger>
+    </TabsList>
+  </div>
 
-              <div className="relative w-full xl:max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search order ID, table, or item..."
-                  className="pl-9 h-11 bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-[#008080]/20 focus:border-[#008080] transition-all"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
+  <div className="relative w-full xl:max-w-sm">
+    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+    <Input
+      placeholder="Search order ID, table..."
+      className="pl-9 h-11 bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-[#008080]/20 focus:border-[#008080] transition-all w-full"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+    />
+  </div>
+</div>
 
             {["all", "preparing", "payment", "completed"].map((tab) => (
               <TabsContent key={tab} value={tab} className="m-0 focus-visible:outline-none">
@@ -275,24 +291,24 @@ export default function OrdersContainer() {
                   <div className="p-6"><OrdersLoadingSkeleton /></div>
                 ) : getFilteredOrdersByStatus(tab).length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-24 text-center">
-                    <div className="h-16 w-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
-                      <ListOrdered className="h-8 w-8 text-gray-400" />
+                    <div className="h-16 w-16 rounded-full bg-[#008080]/5 flex items-center justify-center mb-4">
+                      <ListOrdered className="h-8 w-8 text-[#008080]/40" />
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900">No orders found in this view</h3>
+                    <h3 className="text-lg font-medium text-gray-900">No orders found</h3>
                     <p className="text-sm text-gray-500 max-w-sm mt-1">Try adjusting your search filters or changing the status tab.</p>
                   </div>
                 ) : (
                   <>
-                    <div className="hidden md:block">
-                      <Table>
+                    <div className="hidden md:block overflow-x-auto">
+                      <Table className="min-w-full">
                         <TableHeader className="bg-gray-50/50 border-b border-gray-100">
                           <TableRow className="hover:bg-transparent">
-                            <TableHead className="w-[180px] font-medium text-gray-500 h-12 pl-6">#</TableHead>
-                            <TableHead className="w-[180px] font-medium text-gray-500 h-12 pl-6">Date</TableHead>
-                            <TableHead className="font-medium text-gray-500 h-12">Items</TableHead>
-                            <TableHead className="font-medium text-gray-500 h-12">Table</TableHead>
-                            <TableHead className="font-medium text-gray-500 h-12">Status</TableHead>
-                            <TableHead className="text-right font-medium text-gray-500 pr-6 h-12">Amount</TableHead>
+                            <TableHead className="w-[140px] font-medium text-gray-500 h-12 pl-6">Order ID</TableHead>
+                            <TableHead className="w-[200px] font-medium text-gray-500 h-12">Date & Time</TableHead>
+                            <TableHead className="font-medium text-gray-500 h-12">Summary</TableHead>
+                            <TableHead className="w-[120px] font-medium text-gray-500 h-12">Table</TableHead>
+                            <TableHead className="w-[160px] font-medium text-gray-500 h-12">Status</TableHead>
+                            <TableHead className="text-right font-medium text-gray-500 pr-6 h-12 w-[140px]">Total</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -300,31 +316,26 @@ export default function OrdersContainer() {
                             const { icon, classes, label } = getStatusDetails(order.orderStatus, order.paid);
                             
                             return (
-                              <TableRow key={order._id} className="cursor-pointer hover:bg-gray-50/80 transition-colors group">
+                              <TableRow 
+                                key={order._id} 
+                                onClick={() => setSelectedOrder(order)}
+                                className="cursor-pointer hover:bg-gray-50/80 transition-colors group"
+                              >
                                 <TableCell className="pl-6 py-4">
-                                  <div className="flex flex-col">
-                                    <span className="font-semibold text-gray-900 group-hover:text-[#008080] transition-colors">#{order._id.slice(0,4)}</span>
-                                    
-                                  </div>
+                                  <Badge variant="outline" className="text-xs font-mono text-gray-500 bg-gray-50 border-gray-200 uppercase group-hover:border-[#008080]/30 group-hover:text-[#008080] transition-colors">
+                                    {order.orderId ? `#${order.orderId}` : `#${order._id.slice(-6)}`}
+                                  </Badge>
                                 </TableCell>
                                 <TableCell className="py-4">
-                                  <div className="flex flex-col">
-                                    
-                                    <span className="text-xs text-gray-500 flex items-center mt-1">
-                                      
-                                      {formatTime(order.createdAt)}
-                                    </span>
-                                  </div>
+                                  <span className="text-sm text-gray-600 font-medium">{formatTime(order.createdAt)}</span>
                                 </TableCell>
                                 <TableCell className="py-4">
-                                  <div className="flex flex-col">
-                                    <span className="text-sm font-medium text-gray-700 truncate max-w-[250px] lg:max-w-[400px]">
-                                      {order.items.map(m => `${m.quantity}x ${m.name}`).join(', ')}
-                                    </span>
-                                  </div>
+                                  <span className="text-sm text-gray-500 truncate block max-w-[250px] lg:max-w-[400px]">
+                                    {order.items.map(m => `${m.quantity}x ${m.name}`).join(', ')}
+                                  </span>
                                 </TableCell>
-                                <TableCell className="pl-2 py-4">
-                                  <div className="inline-flex items-center px-2.5 py-1 rounded bg-gray-100 text-gray-800 text-xs font-semibold">
+                                <TableCell className="py-4">
+                                  <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-gray-100 text-gray-700 text-sm font-semibold">
                                     {order.tableNumber}
                                   </div>
                                 </TableCell>
@@ -335,7 +346,9 @@ export default function OrdersContainer() {
                                   </span>
                                 </TableCell>
                                 <TableCell className="text-right pr-6 py-4">
-                                  <span className="font-bold text-gray-900">{formatPrice(calculateOrderTotal(order))}</span>
+                                  <span className="font-bold text-gray-900 group-hover:text-[#008080] transition-colors">
+                                    {formatPrice(calculateOrderTotal(order))}
+                                  </span>
                                 </TableCell>
                               </TableRow>
                             );
@@ -350,11 +363,17 @@ export default function OrdersContainer() {
                         const { icon, classes, label } = getStatusDetails(order.orderStatus, order.paid);
                         
                         return (
-                          <div key={order._id} className="p-5 flex flex-col gap-4 hover:bg-gray-50 cursor-pointer transition-colors">
+                          <div 
+                            key={order._id} 
+                            onClick={() => setSelectedOrder(order)}
+                            className="p-5 flex flex-col gap-4 hover:bg-gray-50 cursor-pointer transition-colors active:bg-gray-100"
+                          >
                             <div className="flex justify-between items-start">
                               <div>
-                                <h3 className="font-bold text-gray-900">{order.orderId}</h3>
-                                <p className="text-xs text-gray-500 mt-0.5 flex items-center">
+                                <Badge variant="outline" className="text-xs font-mono text-gray-500 bg-gray-50 border-gray-200 mb-1">
+                                  {order.orderId ? `#${order.orderId}` : `#${order._id.slice(-6)}`}
+                                </Badge>
+                                <p className="text-xs text-gray-500 flex items-center">
                                   <CalendarClock className="w-3 h-3 mr-1" />
                                   {formatTime(order.createdAt)}
                                 </p>
@@ -365,12 +384,12 @@ export default function OrdersContainer() {
                               </span>
                             </div>
 
-                            <div className="text-sm text-gray-600 bg-gray-50/50 p-3 rounded-lg border border-gray-100">
+                            <div className="text-sm text-gray-600 bg-gray-50/50 p-3 rounded-lg border border-gray-100 line-clamp-2">
                                {order.items.map(m => `${m.quantity}x ${m.name}`).join(', ')}
                             </div>
 
                             <div className="flex items-center justify-between pt-1">
-                               <div className="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                               <div className="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-md">
                                  Table <span className="text-gray-900 font-bold">{order.tableNumber}</span>
                                </div>
                                <div className="font-bold text-gray-900 text-lg">
@@ -388,6 +407,98 @@ export default function OrdersContainer() {
           </Tabs>
         </div>
       </div>
+
+      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+        <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden bg-white rounded-xl shadow-2xl border-0">
+          {selectedOrder && (
+            <div className="flex flex-col h-full max-h-[85vh]">
+              <div className="bg-[#008080] text-white p-6 text-center relative">
+                <div className="absolute top-0 left-0 w-full h-2 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 to-transparent opacity-50"></div>
+                <h2 className="text-xl font-bold tracking-tight">Order Receipt</h2>
+                <p className="text-white/80 text-sm mt-1 font-mono uppercase tracking-wider">
+                  {selectedOrder.orderId ? `#${selectedOrder.orderId}` : `#${selectedOrder._id.slice(-6)}`}
+                </p>
+              </div>
+
+              <div className="p-6 overflow-y-auto font-mono text-sm bg-gray-50/30">
+                <div className="flex justify-between items-center pb-4 border-b border-dashed border-gray-300">
+                  <div className="text-gray-500">
+                    <p>Date:</p>
+                    <p className="font-medium text-gray-900 mt-0.5">{formatTime(selectedOrder.createdAt)}</p>
+                  </div>
+                  <div className="text-right text-gray-500">
+                    <p>Table:</p>
+                    <p className="font-bold text-gray-900 text-lg mt-0.5">{selectedOrder.tableNumber}</p>
+                  </div>
+                </div>
+
+                <div className="py-4 space-y-4">
+                  <div className="grid grid-cols-12 text-xs text-gray-400 font-semibold tracking-wider uppercase mb-2">
+                    <div className="col-span-2">Qty</div>
+                    <div className="col-span-6">Item</div>
+                    <div className="col-span-4 text-right">Amount</div>
+                  </div>
+                  
+                  {selectedOrder.items.map((item, idx) => (
+                    <div key={idx} className="grid grid-cols-12 gap-2 text-gray-700 items-start">
+                      <div className="col-span-2 font-medium">{item.quantity}x</div>
+                      <div className="col-span-6 pr-2">
+                        <span className="font-semibold text-gray-900">{item.name}</span>
+                        {item.description && (
+                           <span className="block text-xs text-gray-400 line-clamp-1 mt-0.5 font-sans">{item.description}</span>
+                        )}
+                      </div>
+                      <div className="col-span-4 text-right font-medium">
+                        {formatPrice(item.cost * item.quantity)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-4 border-t border-dashed border-gray-300">
+                  <div className="flex justify-between items-center text-gray-600 mb-2">
+                    <span>Subtotal</span>
+                    <span>{formatPrice(calculateOrderTotal(selectedOrder))}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-600 mb-4">
+                    <span>Tax (0%)</span>
+                    <span>KES 0</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xl font-bold text-gray-900 py-3 border-y border-dashed border-gray-300 bg-white px-2">
+                    <span>TOTAL</span>
+                    <span className="text-[#008080]">{formatPrice(calculateOrderTotal(selectedOrder))}</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-center">
+                   <div className="flex gap-[2px] h-10 items-center opacity-60">
+                     {[...Array(30)].map((_, i) => (
+                       <div key={i} className="bg-gray-800" style={{ width: `${Math.random() * 3 + 1}px`, height: '100%' }}></div>
+                     ))}
+                   </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-white border-t border-gray-100 flex gap-3">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 border-gray-200 font-sans"
+                  onClick={() => window.print()}
+                >
+                  <Printer className="w-4 h-4 mr-2" />
+                  Print
+                </Button>
+                <Button 
+                  className="flex-1 bg-[#008080] hover:bg-[#006666] text-white font-sans shadow-md shadow-[#008080]/20"
+                  onClick={() => setSelectedOrder(null)}
+                >
+                  Close Receipt
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -398,15 +509,15 @@ function OrdersLoadingSkeleton() {
       {[1, 2, 3, 4, 5].map((item) => (
         <div key={item} className="flex items-center justify-between py-5 border-b border-gray-50 last:border-0 px-6">
           <div className="space-y-2">
-            <Skeleton className="h-5 w-32 bg-gray-100" />
-            <Skeleton className="h-3 w-24 bg-gray-100" />
+            <Skeleton className="h-6 w-24 bg-gray-100 rounded-md" />
+            <Skeleton className="h-4 w-32 bg-gray-100" />
           </div>
-          <div className="hidden md:block space-y-2">
-             <Skeleton className="h-4 w-48 bg-gray-100" />
+          <div className="hidden md:block space-y-2 flex-1 px-8">
+             <Skeleton className="h-4 w-full bg-gray-100" />
           </div>
-          <Skeleton className="h-6 w-16 bg-gray-100 rounded" />
-          <Skeleton className="h-6 w-24 rounded-full bg-gray-100" />
-          <Skeleton className="h-5 w-20 bg-gray-100" />
+          <Skeleton className="h-7 w-16 bg-gray-100 rounded-md mx-4" />
+          <Skeleton className="h-7 w-28 rounded-full bg-gray-100" />
+          <Skeleton className="h-6 w-24 bg-gray-100 ml-4" />
         </div>
       ))}
     </div>

@@ -18,7 +18,7 @@ export function NotificationCenter() {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
+      <PopoverTrigger>
         <Button variant="outline" size="icon">
           <Bell className="h-4 w-4" />
         </Button>

@@ -34,14 +34,6 @@ export default function FloorPlans() {
       <FullScreenLoader />
     );
 
-  if (error && (error as Error).message !== "Dining areas not found") {
-    return (
-      <div>
-        <p>Error: {(error as Error).message}</p>
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="overflow-x-hidden overflow-y-hidden oswald">

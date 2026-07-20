@@ -162,9 +162,6 @@ export function RestaurantSetupModal({ isOpen, onOpenChange }: RestaurantSetupMo
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
         className="[&>button]:hidden sm:max-w-2xl p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-[24px] flex flex-col max-h-[90vh] font-sans"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <div className="px-8 pt-8 pb-6 bg-gray-50/50 border-b border-gray-100 z-10 shrink-0">
           <DialogHeader className="flex flex-row items-center gap-4 space-y-0">

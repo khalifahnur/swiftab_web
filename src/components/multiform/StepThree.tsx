@@ -7,8 +7,8 @@ interface StepThreeProps {
     values: { taxRate: number; serviceCharge: number; paymentMethods: string[]; };
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     setFieldValue: (field: string, value: any) => void;
-    errors: { taxRate?: string; serviceCharge?: string; paymentMethods?: string; };
-    touched: { taxRate?: boolean; serviceCharge?: boolean; paymentMethods?: boolean; };
+    errors: { taxRate?: string; serviceCharge?: string; paymentMethods?: string| string[]; };
+    touched: { taxRate?: boolean; serviceCharge?: boolean; paymentMethods?: boolean| boolean[]; };
   };
 }
 

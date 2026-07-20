@@ -10,33 +10,30 @@ import { TableItem, TableResponse } from "@/types/table";
 export const loginAdmin = async (data: AuthData): Promise<AuthResponse> => {
   try {
     const response = await apiClient.post<AuthResponse>(
-      "/auth/admin/SignIn",
+      "/admin/login",
       data,
       {withCredentials: true}
     );
     return response.data;
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message || "An error occurred");
+    console.log(error?.response)
+    throw new Error(error?.response?.data?.error || "An error occurred");
   }
 };
 
 export const signUpAdmin = async (data: AuthData): Promise<AuthResponse> => {
   try {
     const response = await apiClient.post<AuthResponse>(
-      "/auth/admin/SignUp",
+      "/admin/signup",
       data
     );
     return response.data;
   } catch (error: any) {
     if (error?.response) {
-      console.error("Sign-up error details:", error.response);
-      // Show a more specific error message
       const errorMessage =
-        error?.response?.data?.message || "An error occurred during sign up.";
+        error?.response?.data?.error || "An error occurred during sign up.";
       throw new Error(errorMessage);
     } else {
-      // response (network issues, etc.)
-      console.error("Network error or no response:", error);
       throw new Error("Network error or no response from server.");
     }
   }
@@ -45,7 +42,7 @@ export const signUpAdmin = async (data: AuthData): Promise<AuthResponse> => {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function fetchAdminInfo() {
   try {
-    const response = await apiClient.get("/auth/admin/fetchinfo");
+    const response = await apiClient.get("/admin/info");
     return response.data;
   } catch (error: any) {
     if (error?.response?.status === 401) {
@@ -63,20 +60,16 @@ export async function fetchAdminInfo() {
 export const signUpWaiter = async (data: Authwaiter): Promise<AuthWaiterResponse> => {
   try {
     const response = await apiClient.post<AuthWaiterResponse>(
-      "/auth/waiter/waiter-app-signup",
+      "/admin/waiters/signup",
       data
     );
     return response.data;
   } catch (error: any) {
     if (error?.response) {
-      console.error("Sign-up error details:", error.response);
-      // Show a more specific error message
       const errorMessage =
         error?.response?.data?.message || "An error occurred during sign up.";
       throw new Error(errorMessage);
     } else {
-      // response (network issues, etc.)
-      console.error("Network error or no response:", error);
       throw new Error("Network error or no response from server.");
     }
   }
@@ -94,7 +87,7 @@ export const AddRestaurant = async (
 ): Promise<RestaurantResponse> => {
   try {
     const response = await apiClient.post<RestaurantResponse>(
-      `/restaurant/addrestaurant`,
+      `/admin/restaurant`,
       formData,
       {
         headers: {
@@ -105,13 +98,11 @@ export const AddRestaurant = async (
     return response.data;
   } catch (error: any) {
     if (error?.response) {
-      console.error("Add restaurant error details:", error.response);
       const errorMessage =
         error.response.data?.message ||
         "An error occurred while adding the restaurant.";
       throw new Error(errorMessage);
     } else {
-      console.error("Network error or no response:", error);
       throw new Error("Network error or no response from the server.");
     }
   }
@@ -123,24 +114,22 @@ export const addMenu = async (
 ): Promise<MenuResponse> => {
   try {
     const response = await apiClient.post<ErrorResponse>(
-      `restaurant/addmenu/${menuType}`,
+      `/admin/menu/${menuType}`,
       data,
       {
         headers: {
-          "Content-Type": "multipart/form-data", // Set correct header for file uploads
+          "Content-Type": "multipart/form-data",
         },
       }
     );
     return response.data;
   } catch (error: any) {
     if (error?.response) {
-      console.error("Add menu error details:", error);
       const errorMessage =
         error.response.data?.message ||
         "An error occurred while adding the menu.";
       throw new Error(errorMessage);
     } else {
-      console.error("Network error or no response:", error);
       throw new Error("Network error or no response from the server.");
     }
   }
@@ -152,12 +141,11 @@ export const deleteMenu = async (
 ): Promise<DeleteResponse> => {
   try {
     const response = await apiClient.delete<DeleteResponse>(
-      `/restaurant/deletemenu/${menuType}/${itemId}`
+      `/admin/menu/${menuType}/${itemId}`
     );
     return response.data;
   } catch (error: any) {
     if (error?.response) {
-      console.error("Remove menu error details:", error.response);
 
       const errorMessage =
         error.response.data?.message ||
@@ -169,7 +157,6 @@ export const deleteMenu = async (
         details: error.response.data,
       } as ErrorResponse;
     } else {
-      console.error("Network error or no response:", error);
       throw {
         message: "Network error or no response from the server.",
       } as ErrorResponse;
@@ -183,7 +170,7 @@ export const editMenuItem = async (
 ): Promise<EditResponse> => {
   try {
     const response = await apiClient.put<EditResponse>(
-      `/restaurant/updatemenu/${menuType}/${updatedItem.id}`,
+      `/admin/menu/${menuType}/${updatedItem.id}`,
       updatedItem
     );
     return response.data;
@@ -203,20 +190,16 @@ export const saveLayoutInfo = async (
 ): Promise<LayoutResponse> => {
   try {
     const response = await apiClient.post<LayoutResponse>(
-      "/table/save-layout-info",
+      "/admin/layout/info",
       data
     );
     return response.data;
   } catch (error: any) {
     if (error?.response) {
-      console.error("Error saving layout info:", error.response);
-      // Show a more specific error message
       const errorMessage =
         error?.response?.data?.message || "Error saving layout info.";
       throw new Error(errorMessage);
     } else {
-      // response (network issues, etc.)
-      console.error("Network error or no response:", error);
       throw new Error("Network error or no response from server.");
     }
   }
@@ -226,20 +209,16 @@ export const saveTableLayout = async (
   data: TableItem[]
 ): Promise<TableResponse> => {
   try {
-    const response = await apiClient.post<TableResponse>("/table/save-tables", {
+    const response = await apiClient.post<TableResponse>("/admin/layout/tables", {
       tables: data,
     });
     return response.data;
   } catch (error: any) {
     if (error?.response) {
-      console.error("Error saving table layout:", error.response);
-      // Show a more specific error message
       const errorMessage =
         error?.response?.data?.message || "Error saving table layout.";
       throw new Error(errorMessage);
     } else {
-      // response (network issues, etc.)
-      console.error("Network error or no response:", error);
       throw new Error("Network error or no response from server.");
     }
   }
@@ -248,12 +227,10 @@ export const saveTableLayout = async (
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function fetchWaiter() {
   try {
-    const response = await apiClient.get("/auth/admin/fetch-waiter");
+    const response = await apiClient.get("/admin/waiters");
     return response.data;
   } catch (error: any) {
-    console.log("error fetching waiter",error)
     if (error?.response?.status === 401) {
-      // User is not logged in
       return null;
     } else if (error?.response) {
       const errorMessage =
@@ -270,12 +247,11 @@ export const deleteWaiter = async (
 ): Promise<DeleteResponse> => {
   try {
     const response = await apiClient.delete<DeleteResponse>(
-      `/auth/admin/waiter/${waiterId}`
+      `/admin/waiters/${waiterId}`
     );
     return response.data;
   } catch (error: any) {
     if (error?.response) {
-      console.error("delete waiter error:", error.response);
 
       const errorMessage =
         error.response.data?.message ||
@@ -287,7 +263,6 @@ export const deleteWaiter = async (
         details: error.response.data,
       } as ErrorResponse;
     } else {
-      console.error("Network error or no response:", error);
       throw {
         message: "Network error or no response from the server.",
       } as ErrorResponse;

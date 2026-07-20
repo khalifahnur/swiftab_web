@@ -5,7 +5,7 @@ import { CalendarDays } from "lucide-react"
 import { Calendar } from "@/components/ui/calendar"
 import { DateRange } from "react-day-picker" 
 import { format } from "date-fns"
-import { cn } from "@/lib/utils" // Standard shadcn utility
+import { cn } from "@/lib/utils"
 
 interface DateRangePickerProps {
   onChange: (range: { start?: string; end?: string }) => void
@@ -16,7 +16,7 @@ export function DateRangePicker({ onChange }: DateRangePickerProps) {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
+      <PopoverTrigger>
         <Button 
           variant="outline" 
           className={cn(
@@ -55,7 +55,7 @@ export function DateRangePicker({ onChange }: DateRangePickerProps) {
               onChange({});
             }
           }}
-          initialFocus
+          
         />
       </PopoverContent>
     </Popover>

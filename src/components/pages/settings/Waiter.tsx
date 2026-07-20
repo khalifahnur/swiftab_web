@@ -1,16 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { UserPlus, Mail, Phone, User, Info, ShieldCheck } from "lucide-react";
-
+import { UserPlus, Mail, Phone, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { TabsContent } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
 import { useWaiterSignUp } from "@/hooks/authhook/authhooks";
 import WaiterTable from "./WaiterTable";
 
@@ -22,7 +18,6 @@ const WaiterSignUpSchema = Yup.object().shape({
 });
 
 export default function WaiterSignupTab() {
-  const { toast } = useToast();
   const signUpMutation = useWaiterSignUp();
 
   const handleSubmit = async (
@@ -31,10 +26,8 @@ export default function WaiterSignupTab() {
   ) => {
     try {
       await signUpMutation.mutateAsync(values);
-      toast({ title: "Waiter Registered!", description: "Account created and validation code sent to their email.", variant: "default" });
       resetForm();
     } catch (err: any) {
-      toast({ title: "Registration Failed", description: err.message || "An unexpected error occurred.", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }

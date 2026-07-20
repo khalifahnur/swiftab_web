@@ -3,7 +3,12 @@
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "./provider";
-import { Oswald } from 'next/font/google';
+import { Oswald, Geist } from 'next/font/google';
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+
+
 //import type { Metadata } from 'next';
 
 const oswald = Oswald({ 
@@ -23,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className={`${oswald.variable} antialiased`}>
         <Toaster />
         <Providers>{children}</Providers>

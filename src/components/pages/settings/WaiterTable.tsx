@@ -17,7 +17,7 @@ import { fetchWaiter } from "@/lib/api";
 import { useDeleteWaiter } from "@/hooks/authhook/deleteWaiterHook";
 
 interface Waiter {
-  _id: string;
+  id: string;
   firstname: string;
   lastname: string;
   email: string;
@@ -48,12 +48,9 @@ export default function WaiterTable() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Header Section */}
       <div className="bg-white border-b border-gray-100 px-6 py-5 flex justify-between items-center sticky top-0 z-10">
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex h-10 w-10 rounded-xl bg-[#008080]/10 items-center justify-center shrink-0">
-            <Users className="h-5 w-5 text-[#008080]" />
-          </div>
+          
           <div>
             <h2 className="text-xl font-bold text-gray-900 leading-none mb-1.5">
               Active Staff
@@ -71,7 +68,6 @@ export default function WaiterTable() {
       </div>
 
       <div className="flex-1 p-0">
-        {/* Loading State */}
         {isLoading && (
           <div className="p-6 space-y-0">
             {[1, 2, 3, 4].map((item) => (
@@ -131,7 +127,7 @@ export default function WaiterTable() {
               <TableBody>
                 {waiters.map((waiter) => (
                   <TableRow 
-                    key={waiter._id} 
+                    key={waiter.id} 
                     className="hover:bg-gray-50/80 transition-colors border-b-gray-50 last:border-0 group"
                   >
                     <TableCell className="pl-6 py-5">
@@ -140,7 +136,7 @@ export default function WaiterTable() {
                       </div>
                       <div className="flex items-center gap-2 mt-1.5">
                         <Badge variant="outline" className="text-[10px] font-mono text-gray-500 bg-white px-2 py-0.5 border-gray-200 uppercase tracking-wider">
-                          ID: ...{waiter._id.slice(-6)}
+                          ID: ...{waiter?.id.slice(-6)}
                         </Badge>
                       </div>
                     </TableCell>
@@ -160,7 +156,7 @@ export default function WaiterTable() {
                     
                     <TableCell className="text-right pr-6 py-5">
                       <Button
-                        onClick={() => handleDelete(waiter._id)}
+                        onClick={() => handleDelete(waiter.id)}
                         variant="ghost"
                         size="icon"
                         className="text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors h-9 w-9 rounded-lg"

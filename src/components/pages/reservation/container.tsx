@@ -103,14 +103,13 @@ export default function ReservationsPage() {
     return filteredReservations.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredReservations, currentPage]);
 
-  const handleFilterChange = (name: string, value: string) => {
+  const handleFilterChange = (name: string, value: string | null) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   const getStatusBadge = (status: string) => {
     const s = status.toLowerCase();
     if (s === "confirmed" || s === "active") {
-      // Changed to brand teal color
       return <Badge className="bg-[#008080]/10 text-[#008080] ring-1 ring-inset ring-[#008080]/20 hover:bg-[#008080]/20 shadow-none font-semibold px-2.5 py-0.5">{status.toUpperCase()}</Badge>;
     }
     if (s === "pending") {

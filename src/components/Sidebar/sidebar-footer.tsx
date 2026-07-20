@@ -54,7 +54,7 @@ export default function SideBarFooter() {
       <SidebarMenu>
         <SidebarMenuItem>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
               <SidebarMenuButton>
                 <Settings /> Settings
                 <ChevronUp className="ml-auto" />

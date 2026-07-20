@@ -2,7 +2,7 @@ import apiClient from "@/lib/axios";
 
 export async function fetchRestaurantTables() {
   try {
-    const response = await apiClient.get("/table/fetch-restaurant-tables");
+    const response = await apiClient.get("/admin/layout/tables");
     if (!response) {
       throw new Error("Failed to fetch tables");
     }

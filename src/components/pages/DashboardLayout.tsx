@@ -26,7 +26,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-[#004c4c] text-white overflow-hidden">
+      {/* Changed bg color to match the sidebar for a seamless floating inset effect */}
+      <div className="flex min-h-screen w-full bg-[#0f1115] text-white overflow-hidden">
         <AppSidebar />
         <SidebarInset>
           <div className="flex flex-col h-full w-full">
