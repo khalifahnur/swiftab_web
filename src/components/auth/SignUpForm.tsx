@@ -1,16 +1,15 @@
-"use client";
-
 import { useRouter } from "next/navigation";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/ui/label"; 
 import { useSignUp } from "@/hooks/authhook/authhooks";
 import { useState } from "react";
-import { Eye, EyeOff, ChevronRight } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { FullScreenLoader } from "../Loading/FullScreen";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 interface AdminSignUpFormProps {
   onClose?: () => void;
@@ -38,7 +37,7 @@ const AdminSignUpSchema = Yup.object().shape({
     .required("Confirm password"),
 });
 
-export function SignUpForm({ onClose, restaurantName = "Swiftab" }: AdminSignUpFormProps) {
+export function SignUpForm({ onClose}: AdminSignUpFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -64,14 +63,17 @@ export function SignUpForm({ onClose, restaurantName = "Swiftab" }: AdminSignUpF
   };
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col oswald">
+    <div className="w-full max-w-[420px] mx-auto flex flex-col bodyfont">
       {loading && <FullScreenLoader />}
-      <div className="text-center mb-6">
-        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
+      <div className="mb-5 text-left">
+        <h2 className="text-2xl font-semibold text-slate-900 tracking-tight mb-1">
           Create an account
         </h2>
-        <p className="text-sm text-gray-500 font-medium">
-          Set up your {restaurantName} admin dashboard
+        <p className="text-[14px] text-slate-500">
+          Already have an account?{" "}
+          <Link href="/signin" className="text-teal-600 font-medium hover:text-teal-700 hover:underline underline-offset-4 transition-all">
+            Log in
+          </Link>
         </p>
       </div>
 
@@ -88,108 +90,119 @@ export function SignUpForm({ onClose, restaurantName = "Swiftab" }: AdminSignUpF
         onSubmit={handleSubmit}
       >
         {({ isSubmitting }) => (
-          <Form className="space-y-4">
+          <Form className="space-y-3.5">
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-sm font-semibold text-gray-700">Full Name</Label>
+              <div className="relative pb-1">
+                <Label htmlFor="name" className="text-[13px] font-medium text-slate-700 mb-1 block">Full Name</Label>
                 <Field
                   name="name"
                   as={Input}
                   type="text"
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder-slate-400 shadow-sm hover:border-slate-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
                   placeholder="John Doe"
                 />
-                <ErrorMessage name="name" component="div" className="text-red-500 text-xs font-medium" />
+                <ErrorMessage name="name" component="div" className="text-red-500 text-[11px] absolute bottom-[-4px] left-1 font-medium" />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="restaurantName" className="text-sm font-semibold text-gray-700">Restaurant</Label>
+              <div className="relative pb-1">
+                <Label htmlFor="restaurantName" className="text-[13px] font-medium text-slate-700 mb-1 block">Restaurant Name</Label>
                 <Field
                   name="restaurantName"
                   as={Input}
                   type="text"
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder-slate-400 shadow-sm hover:border-slate-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
                   placeholder="The Gourmet"
                 />
-                <ErrorMessage name="restaurantName" component="div" className="text-red-500 text-xs font-medium" />
+                <ErrorMessage name="restaurantName" component="div" className="text-red-500 text-[11px] absolute bottom-[-4px] left-1 font-medium" />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-sm font-semibold text-gray-700">Email Address</Label>
+              <div className="relative pb-1">
+                <Label htmlFor="email" className="text-[13px] font-medium text-slate-700 mb-1 block">Email Address</Label>
                 <Field
                   name="email"
                   as={Input}
                   type="email"
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
-                  placeholder="admin@place.com"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder-slate-400 shadow-sm hover:border-slate-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
+                  placeholder="name@restaurant.com"
                 />
-                <ErrorMessage name="email" component="div" className="text-red-500 text-xs font-medium" />
+                <ErrorMessage name="email" component="div" className="text-red-500 text-[11px] absolute bottom-[-4px] left-1 font-medium" />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="phoneNumber" className="text-sm font-semibold text-gray-700">Phone Number</Label>
+              <div className="relative pb-1">
+                <Label htmlFor="phoneNumber" className="text-[13px] font-medium text-slate-700 mb-1 block">Phone Number</Label>
                 <Field
                   name="phoneNumber"
                   as={Input}
                   type="text"
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
-                  placeholder="+254 7 1234 567"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder-slate-400 shadow-sm hover:border-slate-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
+                  placeholder="+1 (555) 000-0000"
                 />
-                <ErrorMessage name="phoneNumber" component="div" className="text-red-500 text-xs font-medium" />
+                <ErrorMessage name="phoneNumber" component="div" className="text-red-500 text-[11px] absolute bottom-[-4px] left-1 font-medium" />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</Label>
+              <div className="relative pb-1">
+                <Label htmlFor="password" className="text-[13px] font-medium text-slate-700 mb-1 block">Password</Label>
                 <div className="relative">
                   <Field
                     name="password"
                     as={Input}
                     type={showPassword ? "text" : "password"}
-                    className="w-full px-3 py-2 pr-9 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
-                    placeholder="••••••••"
+                    className="w-full px-3 py-2 pr-10 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder-slate-400 shadow-sm hover:border-slate-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
+                    placeholder="Create a password"
                   />
                   <button
                     type="button"
-                    className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-                <ErrorMessage name="password" component="div" className="text-red-500 text-xs font-medium" />
+                <ErrorMessage name="password" component="div" className="text-red-500 text-[11px] absolute bottom-[-4px] left-1 font-medium" />
               </div>
               
-              <div className="space-y-1.5">
-                <Label htmlFor="confirmPassword" className="text-sm font-semibold text-gray-700">Confirm Password</Label>
+              <div className="relative pb-1">
+                <Label htmlFor="confirmPassword" className="text-[13px] font-medium text-slate-700 mb-1 block">Confirm Password</Label>
                 <div className="relative">
                   <Field
                     name="confirmPassword"
                     as={Input}
                     type={showConfirmPassword ? "text" : "password"}
-                    className="w-full px-3 py-2 pr-9 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
-                    placeholder="••••••••"
+                    className="w-full px-3 py-2 pr-10 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder-slate-400 shadow-sm hover:border-slate-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200"
+                    placeholder="Confirm password"
                   />
                   <button
                     type="button"
-                    className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     tabIndex={-1}
                   >
                     {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-                <ErrorMessage name="confirmPassword" component="div" className="text-red-500 text-xs font-medium" />
+                <ErrorMessage name="confirmPassword" component="div" className="text-red-500 text-[11px] absolute bottom-[-4px] left-1 font-medium" />
               </div>
             </div>
-
+            <div className="pt-2 pb-1">
+              <label className="flex items-start gap-2.5 cursor-pointer group">
+                <input 
+                  type="checkbox" 
+                  className="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-teal-600 focus:ring-teal-600 focus:ring-offset-white cursor-pointer" 
+                  required
+                />
+                <span className="text-[13px] text-slate-600 leading-snug">
+                  I agree to the <a href="/terms" className="text-teal-600 font-medium hover:underline">Terms</a> and <a href="/privacy" className="text-teal-600 font-medium hover:underline">Privacy Policy</a>
+                </span>
+              </label>
+            </div>
             <Button
               type="submit"
               disabled={isSubmitting || loading}
-              className="w-full py-2.5 mt-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg shadow-sm hover:shadow transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full py-2.5 mt-1 bg-teal-600 hover:bg-teal-700 text-white font-medium text-[14px] rounded-lg shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading || isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
@@ -197,27 +210,10 @@ export function SignUpForm({ onClose, restaurantName = "Swiftab" }: AdminSignUpF
                   <span>Creating account...</span>
                 </div>
               ) : (
-                <span>Register as Administrator</span>
+                <span>Create account</span>
               )}
             </Button>
 
-            {/* Footer Links */}
-            <div className="pt-4 text-center">
-              <p className="text-sm text-gray-600">
-                Already have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => router.push("/signin")}
-                  className="text-teal-600 font-semibold hover:text-teal-700 inline-flex items-center transition-colors"
-                >
-                  Sign in <ChevronRight size={14} className="ml-0.5 mt-0.5" />
-                </button>
-              </p>
-            </div>
-            
-            <div className="text-center text-[11px] text-gray-400 mt-2">
-              By registering, you agree to our <a href="/terms" className="hover:text-gray-600 transition-colors">Terms</a> and <a href="/privacy" className="hover:text-gray-600 transition-colors">Privacy Policy</a>.
-            </div>
           </Form>
         )}
       </Formik>

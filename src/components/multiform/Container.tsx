@@ -13,7 +13,7 @@ import { useAddRestaurant } from "@/hooks/restauranthook/restauranthook";
 import { ErrorResponse } from "@/types/restaurant";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "@/components/auth/AuthContext";
 import { ChevronLeft, ChevronRight, Loader2, Store } from "lucide-react";
 import { StepFive } from "./StepFive";
 import { StepFour } from "./StepFour";

@@ -1,12 +1,12 @@
 "use client";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { useAuth } from "../auth/AuthContext";
-import { RestaurantSetupModal } from "../multiform/Container";
+import { useAuth } from "@/components/auth/AuthContext";
+import { RestaurantSetupModal } from "@/components/multiform/Container";
 import { useEffect, useState } from "react";
-import { FullScreenLoader } from "../Loading/FullScreen";
-import { AppSidebar } from "../Sidebar/app-sidebar";
-import { Header } from "../Sidebar/Header";
+import { FullScreenLoader } from "@/components/Loading/FullScreen";
+import { AppSidebar } from "@/components/Sidebar/app-sidebar";
+import { Header } from "@/components/Sidebar/Header";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isNewUser, setIsNewUser] = useState(false);
@@ -26,7 +26,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      {/* Changed bg color to match the sidebar for a seamless floating inset effect */}
       <div className="flex min-h-screen w-full bg-[#0f1115] text-white overflow-hidden">
         <AppSidebar />
         <SidebarInset>

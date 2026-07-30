@@ -95,10 +95,10 @@ const TableNode = ({ table, isSelected, onSelect, onUpdateTransform, onContextMe
 
         <Text text={table.name} x={0} y={cy - 16} width={table.size.width} align="center" fontSize={16} fontStyle="bold" fill="#4b5563" />
 
-        <Group x={cx - 30} y={cy + 8}>
+        {/* <Group x={cx - 30} y={cy + 8}>
           <Rect width={60} height={20} cornerRadius={2} fill={table.status === 'Free' ? '#5E8B83' : '#374151'} />
           <Text text={table.status} width={60} y={4} align="center" fontSize={11} fontStyle="bold" fill="#ffffff" />
-        </Group>
+        </Group> */}
       </Group>
 
       {isSelected && (

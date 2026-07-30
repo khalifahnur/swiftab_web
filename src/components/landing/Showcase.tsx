@@ -1,5 +1,6 @@
 "use client"
 import { motion } from 'motion/react';
+import Image from 'next/image';
 
 export default function Showcase() {
   return (
@@ -48,27 +49,30 @@ export default function Showcase() {
                 1
               </div>
               
-              <div className="w-full md:w-1/2 md:pl-16 relative">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-[300px] h-[250px] md:h-[300px] bg-teal/10 rounded-full blur-[60px] pointer-events-none"></div>
-                <motion.div 
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  className="relative bg-white border border-line rounded-2xl shadow-xl overflow-hidden aspect-[4/3]"
-                >
-                  <div className="absolute inset-0 bg-ink/[0.02] flex items-center justify-center p-6 md:p-8">
-                     {/* Mock UI */}
-                     <div className="w-full h-full bg-white rounded border border-line shadow-sm flex flex-col p-4">
-                       <div className="w-full h-8 bg-paper-dim rounded mb-4"></div>
-                       <div className="flex-1 grid grid-cols-3 gap-2">
-                         <div className="bg-teal/20 rounded border border-teal/30"></div>
-                         <div className="bg-paper-dim rounded border border-line"></div>
-                         <div className="bg-paper-dim rounded border border-line"></div>
-                       </div>
-                     </div>
-                  </div>
-                </motion.div>
-              </div>
+                            <div className="w-full md:w-1/2 md:pr-16 relative">
+  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-[300px] h-[250px] md:h-[300px] bg-[#F25A5A]/10 rounded-full blur-[60px] pointer-events-none"></div>
+  
+  <motion.div 
+    initial={{ opacity: 0, x: -20 }}
+    whileInView={{ opacity: 1, x: 0 }}
+    viewport={{ once: true, margin: "-50px" }}
+    className="relative bg-white border border-line rounded-2xl shadow-xl overflow-hidden aspect-[4/3]"
+  >
+    {/* Video Container */}
+    <div className="absolute inset-0 w-full h-full bg-ink/[0.02]">
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="w-full h-full object-cover"
+      >
+        <source src="/swiftab/videos/arrange-tables.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </motion.div>
+</div>
             </div>
             
             {/* Step 2 */}
@@ -102,21 +106,30 @@ export default function Showcase() {
               </div>
               
               <div className="w-full md:w-1/2 md:pr-16 relative">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-[300px] h-[250px] md:h-[300px] bg-[#F25A5A]/10 rounded-full blur-[60px] pointer-events-none"></div>
-                <motion.div 
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  className="relative bg-white border border-line rounded-2xl shadow-xl overflow-hidden aspect-[4/3]"
-                >
-                  <div className="absolute inset-0 bg-ink/[0.02] flex items-center justify-center p-6 md:p-8">
-                     <div className="w-full h-full flex gap-4">
-                       <div className="w-1/3 bg-white rounded border border-line shadow-sm"></div>
-                       <div className="flex-1 bg-white rounded border border-line shadow-sm"></div>
-                     </div>
-                  </div>
-                </motion.div>
-              </div>
+  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-[300px] h-[250px] md:h-[300px] bg-[#F25A5A]/10 rounded-full blur-[60px] pointer-events-none"></div>
+  
+  <motion.div 
+    initial={{ opacity: 0, x: -20 }}
+    whileInView={{ opacity: 1, x: 0 }}
+    viewport={{ once: true, margin: "-50px" }}
+    className="relative bg-white border border-line rounded-2xl shadow-xl overflow-hidden aspect-[4/3]"
+  >
+    {/* Video Container */}
+    <div className="absolute inset-0 w-full h-full bg-ink/[0.02]">
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="w-full h-full object-cover"
+      >
+        <source src="/swiftab/videos/optimize-for-every-use.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </motion.div>
+</div>
+
             </div>
             
             {/* Step 3 */}
@@ -149,22 +162,30 @@ export default function Showcase() {
                 3
               </div>
               
-              <div className="w-full md:w-1/2 md:pl-16 relative">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-[300px] h-[250px] md:h-[300px] bg-[#5A73F2]/10 rounded-full blur-[60px] pointer-events-none"></div>
-                <motion.div 
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  className="relative bg-white border border-line rounded-2xl shadow-xl overflow-hidden aspect-[4/3]"
-                >
-                  <div className="absolute inset-0 bg-ink/[0.02] flex items-center justify-center p-6 md:p-8">
-                     <div className="w-full h-full flex flex-col gap-4">
-                       <div className="flex-1 bg-white rounded border border-line shadow-sm"></div>
-                       <div className="h-1/3 bg-white rounded border border-line shadow-sm"></div>
-                     </div>
-                  </div>
-                </motion.div>
-              </div>
+                            <div className="w-full md:w-1/2 md:pr-16 relative">
+  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-[300px] h-[250px] md:h-[300px] bg-[#F25A5A]/10 rounded-full blur-[60px] pointer-events-none"></div>
+  
+  <motion.div 
+    initial={{ opacity: 0, x: -20 }}
+    whileInView={{ opacity: 1, x: 0 }}
+    viewport={{ once: true, margin: "-50px" }}
+    className="relative bg-white border border-line rounded-2xl shadow-xl overflow-hidden aspect-[4/3]"
+  >
+    {/* Video Container */}
+    <div className="absolute inset-0 w-full h-full bg-ink/[0.02]">
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="w-full h-full object-cover"
+      >
+        <source src="/swiftab/videos/maximize-table-turns.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </motion.div>
+</div>
             </div>
             
           </div>

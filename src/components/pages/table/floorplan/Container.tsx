@@ -39,7 +39,6 @@ export default function Container() {
     return () => window.removeEventListener("click", handleClick);
   }, []);
 
-  // --- Table Manipulation ---
   const handleUpdateTableTransform = (id: string, x: number, y: number, rotation: number) => {
     setTables((prev) => prev.map((t) => t.id === id ? { ...t, position: { x, y }, rotation } : t));
   };
@@ -103,9 +102,7 @@ export default function Container() {
     setSelectedTableId(newTable.id);
   };
 
-  // --- Floor Management ---
   const handleAddFloor = () => {
-    // In a production app, use a proper Dialog. Prompt is a quick native solution for the specific request.
     const name = prompt("Enter a name for the new floor/layout (e.g., Patio, 4th Floor):");
     if (name && name.trim() !== "") {
       const newFloorId = `floor-${Date.now()}`;
@@ -115,7 +112,6 @@ export default function Container() {
     }
   };
 
-  // --- Data Fetching ---
   const { data, isLoading, error } = useQuery({
     queryKey: ["restaurantTables"],
     queryFn: fetchRestaurantTables,
@@ -137,8 +133,7 @@ export default function Container() {
   const selectedTableData = tables.find((t) => t.id === selectedTableId);
 
   const handleSave = () => {
-    // Ensure dining areas are saved back in the format the Go backend expects
-    if (tables.length >= 0) { // Allowed to save 0 tables
+    if (tables.length >= 0) {
       saveTableMutation.mutate(tables, {
         onSuccess: () => toast({ title: "Layout saved successfully!" })
       });
@@ -149,31 +144,23 @@ export default function Container() {
   if (error) return <div className="p-8 text-center text-red-500">Error loading floor plan.</div>;
 
   return (
-    <div className="flex flex-col w-full h-[calc(100vh-2rem)] min-h-[700px] bg-[#F8F9FA] font-sans border border-gray-200 rounded-xl overflow-hidden shadow-sm relative">
-      
-      {/* Top Header */}
+    <div className="bodyfont flex flex-col w-full h-[calc(100vh-2rem)] min-h-[700px] bg-[#F8F9FA] font-sans border border-gray-200 rounded-xl overflow-hidden shadow-sm relative">
       <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100 z-20 shrink-0">
         <div className="flex items-center gap-4 w-1/4">
-          <button className="text-gray-400 hover:text-gray-900 transition-colors flex items-center text-sm font-medium">
-            <ChevronLeft className="h-4 w-4 mr-1" /> Tables
-          </button>
           <h1 className="text-2xl font-bold text-gray-900">Arrange Tables</h1>
         </div>
-
-        {/* Dynamic Floor Pills with "Add Layout" Button */}
         <div className="flex items-center bg-gray-100 p-1 rounded-lg w-auto max-w-[40%] overflow-x-auto scrollbar-hide shrink-0">
           {diningAreas.map((floor) => (
             <button
               key={floor.id}
               onClick={() => { setSelectedFloor(floor.id); setSelectedTableId(null); }}
               className={`px-6 py-1.5 rounded-md text-sm font-semibold transition-all whitespace-nowrap ${
-                selectedFloor === floor.id ? "bg-[#1E1E1E] text-white shadow-sm" : "text-gray-500 hover:text-gray-900"
+                selectedFloor === floor.id ? "bg-teal text-white shadow-sm" : "text-gray-500 hover:text-teal/20"
               }`}
             >
               {floor.name}
             </button>
           ))}
-          {/* Add Floor Button */}
           <button 
             onClick={handleAddFloor}
             title="Add new floor/layout"
@@ -186,8 +173,6 @@ export default function Container() {
         <div className="flex items-center justify-end gap-3 w-1/3 relative">
           <Button variant="outline" size="icon" className="h-9 w-9 border-gray-200 text-gray-500"><Undo2 className="h-4 w-4" /></Button>
           <Button variant="outline" size="icon" className="h-9 w-9 border-gray-200 text-gray-500"><Redo2 className="h-4 w-4" /></Button>
-          
-          {/* Table Library Dropdown Trigger */}
           <div className="relative">
             <Button 
               variant="outline" 
@@ -196,8 +181,6 @@ export default function Container() {
             >
               Add Table <ChevronDown className="h-4 w-4 ml-2" />
             </Button>
-
-            {/* Dropdown Library Content */}
             {isLibraryOpen && (
               <div 
                 className="absolute top-12 right-0 w-80 bg-white border border-gray-200 shadow-2xl rounded-xl p-4 z-50 animate-in fade-in slide-in-from-top-2"
@@ -207,7 +190,6 @@ export default function Container() {
                   <h4 className="font-bold text-gray-900">Table Library</h4>
                 </div>
                 <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto">
-                  {/* Rectangle 4 Seats */}
                   <div onClick={() => { handleAddTableFromLibrary("rectangle", 140, 90, 4); setIsLibraryOpen(false); }} className="aspect-[4/3] bg-gray-50 rounded-xl border border-gray-100 flex flex-col items-center justify-center cursor-pointer hover:border-gray-900 transition-all group">
                     <div className="w-12 h-8 bg-white shadow-sm border border-gray-200 rounded relative group-hover:scale-110 transition-transform mb-2">
                       <div className="absolute -top-1 left-2 w-2 h-1 bg-gray-200"></div><div className="absolute -top-1 right-2 w-2 h-1 bg-gray-200"></div>
@@ -215,16 +197,12 @@ export default function Container() {
                     </div>
                     <span className="text-[10px] font-semibold text-gray-500">4 Seats Rect</span>
                   </div>
-
-                  {/* Square 2 Seats */}
                   <div onClick={() => { handleAddTableFromLibrary("square", 90, 90, 2); setIsLibraryOpen(false); }} className="aspect-[4/3] bg-gray-50 rounded-xl border border-gray-100 flex flex-col items-center justify-center cursor-pointer hover:border-gray-900 transition-all group">
                     <div className="w-8 h-8 bg-white shadow-sm border border-gray-200 rounded relative group-hover:scale-110 transition-transform mb-2">
                       <div className="absolute top-2 -left-1 w-1 h-2 bg-gray-200"></div><div className="absolute top-2 -right-1 w-1 h-2 bg-gray-200"></div>
                     </div>
                     <span className="text-[10px] font-semibold text-gray-500">2 Seats Square</span>
                   </div>
-
-                  {/* Round 4 Seats */}
                   <div onClick={() => { handleAddTableFromLibrary("round", 110, 110, 4); setIsLibraryOpen(false); }} className="aspect-[4/3] bg-gray-50 rounded-xl border border-gray-100 flex flex-col items-center justify-center cursor-pointer hover:border-gray-900 transition-all group">
                     <div className="w-10 h-10 bg-white shadow-sm border border-gray-200 rounded-full relative group-hover:scale-110 transition-transform mb-2">
                       <div className="absolute -top-1 left-3.5 w-3 h-1 bg-gray-200"></div><div className="absolute -bottom-1 left-3.5 w-3 h-1 bg-gray-200"></div>
@@ -232,8 +210,6 @@ export default function Container() {
                     </div>
                     <span className="text-[10px] font-semibold text-gray-500">4 Seats Round</span>
                   </div>
-
-                  {/* Rectangle 6 Seats */}
                   <div onClick={() => { handleAddTableFromLibrary("rectangle", 180, 90, 6); setIsLibraryOpen(false); }} className="aspect-[4/3] bg-gray-50 rounded-xl border border-gray-100 flex flex-col items-center justify-center cursor-pointer hover:border-gray-900 transition-all group">
                     <div className="w-16 h-8 bg-white shadow-sm border border-gray-200 rounded relative group-hover:scale-110 transition-transform mb-2">
                       <div className="absolute -top-1 left-2 w-2 h-1 bg-gray-200"></div><div className="absolute -top-1 left-6 w-2 h-1 bg-gray-200"></div><div className="absolute -top-1 right-2 w-2 h-1 bg-gray-200"></div>
@@ -246,16 +222,12 @@ export default function Container() {
             )}
           </div>
 
-          <Button onClick={handleSave} disabled={saveTableMutation.isPending} className="bg-[#1E1E1E] hover:bg-black text-white px-6 h-9 rounded-md text-sm font-semibold ml-2 shadow-sm">
+          <Button onClick={handleSave} disabled={saveTableMutation.isPending} className="bg-teal hover:bg-teal/20 text-white px-6 h-9 rounded-md text-sm font-semibold ml-2 shadow-sm">
             {saveTableMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </header>
-
-      {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden relative">
-        
-        {/* Canvas Area */}
         <div className="flex-1 relative bg-white">
           <div className="absolute inset-0 pointer-events-none opacity-[0.3]" style={{ backgroundImage: `linear-gradient(#e5e7eb 1px, transparent 1px), linear-gradient(90deg, #e5e7eb 1px, transparent 1px)`, backgroundSize: '24px 24px' }} />
           <FloorCanvas 
@@ -266,8 +238,6 @@ export default function Container() {
             onContextMenu={(id, x, y) => setContextMenu({ x, y, tableId: id })}
           />
         </div>
-
-        {/* Right Sidebar (Table Settings) - ONLY VISIBLE WHEN A TABLE IS SELECTED */}
         {selectedTableData && (
           <div className="w-[320px] shrink-0 bg-white border-l border-gray-200 shadow-2xl z-10 flex flex-col h-full animate-in slide-in-from-right-8 duration-200">
             <div className="p-6 flex flex-col h-full">
@@ -310,8 +280,6 @@ export default function Container() {
           </div>
         )}
       </div>
-
-      {/* Custom Right-Click Context Menu */}
       {contextMenu && contextMenu.tableId && (
         <div 
           className="fixed bg-white border border-gray-200 shadow-2xl rounded-xl w-48 py-2 z-50 animate-in fade-in zoom-in-95 duration-100 font-sans"

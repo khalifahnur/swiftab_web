@@ -73,7 +73,7 @@ export function RestaurantLayout({ isOpen, onClose }: RestaurantLayoutProps) {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-[400px] sm:w-[540px] oswald">
+      <SheetContent className="w-[400px] sm:w-[540px] monofont">
         <SheetHeader>
           <SheetTitle>Add Dining Area</SheetTitle>
           <SheetDescription>

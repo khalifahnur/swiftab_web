@@ -138,13 +138,9 @@ export default function ReservationsPage() {
   }
 
   return (
-    <div className="w-full flex-1 p-4 md:p-8 bg-gray-50/50 min-h-screen font-sans">
+    <div className="w-full flex-1 p-4 md:p-8 bg-gray-50/50 min-h-screen monofont">
       <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Stats Section */}
         <ReservationStats reservations={filteredReservations} />
-
-        {/* Filter & Search Bar */}
         <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col xl:flex-row gap-5 justify-between items-start xl:items-center z-10 relative">
           
           <div className="relative w-full xl:max-w-md">
@@ -211,7 +207,6 @@ export default function ReservationsPage() {
           </div>
         </div>
 
-        {/* Data Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {isPending ? (
             <div className="p-6"><ReservationsLoadingSkeleton /></div>
@@ -290,7 +285,6 @@ export default function ReservationsPage() {
                 </Table>
               </div>
               
-              {/* Pagination Area */}
               {totalPages > 1 && (
                 <div className="p-4 border-t border-gray-100 bg-white">
                   <Pagination
@@ -315,7 +309,6 @@ export default function ReservationsPage() {
   );
 }
 
-// --- Loading Skeleton ---
 function ReservationsLoadingSkeleton() {
   return (
     <div className="space-y-0">

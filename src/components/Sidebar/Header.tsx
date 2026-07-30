@@ -1,8 +1,8 @@
 "use client";
 
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "@/components/auth/AuthContext";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { Bell, Plus, Search } from "lucide-react";
+import { Bell, Search, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -11,54 +11,46 @@ export function Header() {
   const { toggleSidebar, isMobile } = useSidebar();
 
   const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
+    weekday: "short",
     month: "short",
     day: "numeric",
     year: "numeric",
   });
-
+  
   const firstName = user?.name?.split(" ")[0] || "Admin";
 
   return (
-    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 md:p-8 pb-2  shrink-0">
+    <header className="sticky top-0 z-30 flex h-12 w-full items-center justify-between border-b border-gray-200 bg-white/70 backdrop-blur-xl px-4 sm:px-5 shrink-0 transition-all">
       <div className="flex items-center gap-3">
         {isMobile && (
-          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="text-gray-900 bg-gray-100/50">
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="text-gray-600 hover:text-teal-700 bg-transparent rounded-sm h-8 w-8 hover:bg-black/5">
             <SidebarTrigger />
           </Button>
         )}
-        <div>
-          <h1 className="text-lg md:text-xl font-bold text-gray-900 flex items-center gap-2">
-            Hey, {firstName} <span className="animate-wave origin-bottom-right">👋</span>
-          </h1>
-          <p className="text-sm text-gray-500 font-medium mt-1">
-            Welcome back to your dashboard.
-          </p>
+        <div className="hidden lg:block text-[13px] font-semibold text-gray-700 select-none">
+         {user?.restaurantName || "Swiftab"} Workspace
         </div>
       </div>
 
-      <div className="flex items-center gap-3 md:gap-4 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-        <div className="hidden lg:block text-sm font-medium text-gray-500 mr-2 whitespace-nowrap">
+      <div className="flex items-center gap-1 sm:gap-2">
+        <div className="hidden lg:flex text-[12px] font-medium text-gray-500 mr-2 whitespace-nowrap px-2 py-1">
           {today}
         </div>
-
-        {/* <Button className="bg-[#d4f870] hover:bg-[#c2e65c] text-[#1a2e05] rounded-full px-5 h-10 font-bold shadow-sm shrink-0 transition-transform hover:scale-105">
-          <Plus className="w-4 h-4 mr-1.5 stroke-3" />
-          New Order
-        </Button> */}
-
-        <Button variant="outline" size="icon" className="rounded-full h-10 w-10 border-gray-200 text-gray-600 shrink-0 shadow-sm">
+        
+        <Button variant="ghost" size="icon" className="rounded-sm h-8 w-8 text-gray-600 hover:text-teal-700 hover:bg-black/5 transition-colors">
           <Search className="w-4 h-4" />
         </Button>
-
-        <Button variant="outline" size="icon" className="rounded-full h-10 w-10 border-gray-200 text-gray-600 shrink-0 shadow-sm relative">
+        
+        <Button variant="ghost" size="icon" className="rounded-sm h-8 w-8 text-gray-600 hover:text-teal-700 hover:bg-black/5 relative transition-colors">
           <Bell className="w-4 h-4" />
-          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-teal-600 rounded-full border border-white"></span>
         </Button>
-
-        <Avatar className="h-10 w-10 border border-gray-200 shrink-0">
-          <AvatarImage src={user?.image || ""} alt={user?.name || "User"} />
-          <AvatarFallback className="bg-gray-900 text-white font-bold">
+        
+        <div className="h-4 w-px bg-gray-300 mx-2 hidden sm:block"></div>
+        
+        <Avatar className="h-7 w-7 border border-gray-200 shrink-0 cursor-pointer hover:opacity-90 transition-opacity rounded-sm ml-1">
+          <AvatarImage src={user?.image || ""} alt={user?.name || "User"} className="rounded-sm" />
+          <AvatarFallback className="bg-teal-700 text-white font-semibold text-[10px] rounded-sm">
             {firstName.charAt(0)}
           </AvatarFallback>
         </Avatar>

@@ -7,7 +7,7 @@ export default function PrivacyPolicy() {
       <div className="container mx-auto max-w-4xl px-4">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-gray-900">Privacy Policy</h1>
-          <p className="mt-2 text-lg text-gray-600">SwiftTab Restaurant Reservation System</p>
+          <p className="mt-2 text-lg text-gray-600">SwiftTab System</p>
           <p className="text-sm text-gray-500">Last updated: {new Date().toLocaleDateString()}</p>
         </div>
 

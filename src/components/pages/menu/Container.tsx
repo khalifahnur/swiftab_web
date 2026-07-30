@@ -151,16 +151,13 @@ export default function MenuManager() {
   }
 
   return (
-    <div className="w-full flex-1 p-4 md:p-8 bg-gray-50/50 min-h-screen relative font-sans">
+    <div className="w-full flex-1 p-4 md:p-8 bg-gray-50/50 min-h-screen monofont">
       <div className="max-w-7xl mx-auto space-y-6">
-        
-        {/* Header Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 z-10 relative">
-          <h1 className="text-2xl font-bold text-gray-900">Menu Management</h1>
-          <div className="relative w-full sm:w-80 shadow-sm">
+        <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4 z-10 relative">
+          <div className="relative w-full sm:w-80 ">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search dishes, descriptions, codes..."
+              placeholder="Search dishes, descriptions, ..."
               className="pl-9 h-11 bg-white border-gray-200 focus:ring-[#008080]/20 focus:border-[#008080] transition-all w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -168,14 +165,12 @@ export default function MenuManager() {
           </div>
         </div>
 
-        {/* Main Content Area */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
             className="w-full"
           >
-            {/* Tab Controls */}
             <div className="p-4 border-b border-gray-100 bg-gray-50/50">
               <TabsList className="h-12 bg-gray-100/80 p-1 grid grid-cols-3 max-w-md border border-gray-200/50">
                 <TabsTrigger
@@ -211,7 +206,6 @@ export default function MenuManager() {
               </TabsList>
             </div>
 
-            {/* Tab Contents */}
             {["breakfast", "lunch", "dinner"].map((category) => (
               <TabsContent
                 key={category}
@@ -283,11 +277,11 @@ export default function MenuManager() {
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="hidden lg:table-cell text-sm text-gray-500 pr-8 py-4">
-                              <span className="line-clamp-2 leading-relaxed">
-                                {item.description}
-                              </span>
-                            </TableCell>
+                           <TableCell className="hidden lg:table-cell text-sm text-gray-500 pr-8 py-4 max-w-[250px] xl:max-w-[400px]">
+  <div className="line-clamp-2 leading-relaxed break-words whitespace-normal">
+    {item.description}
+  </div>
+</TableCell>
                             <TableCell className="py-4">
                               <span className="font-bold text-gray-900">
                                 {formatPrice(item.price)}

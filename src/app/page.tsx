@@ -16,9 +16,7 @@ export default function Home() {
     <ReactLenis root>
       <div className="font-body text-ink antialiased bg-ink min-h-screen relative selection:bg-teal selection:text-white">
         <Navbar />
-        
-        {/* Main Content */}
-        <div className="relative z-10 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-b-[2rem] md:rounded-b-[3rem] mb-[900px] md:mb-[650px] lg:mb-[600px]">
+        <div className="relative z-10 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-b-[2rem] md:rounded-b-[3rem] mb-225 md:mb-162.5 lg:mb-150">
           <main>
             <Hero />
             <Features />
@@ -30,9 +28,7 @@ export default function Home() {
             <CTA />
           </div>
         </div>
-        
-        {/* Fixed Footer */}
-        <div className="fixed bottom-0 left-0 w-full h-[900px] md:h-[650px] lg:h-[600px] z-0">
+        <div className="fixed bottom-0 left-0 w-full h-225 md:h-162.5 lg:h-150 z-0">
           <Footer />
         </div>
       </div>

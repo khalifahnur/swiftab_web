@@ -4,7 +4,9 @@ import { motion } from 'motion/react';
 const featuresData = [
   {
     title: "Host Stand",
-    desc: "Stop spending time on manual waitlists — auto-pace the floor and manage reservations effortlessly.",
+    desc: "End walk-in bleed and maximize daily cover counts. Automate SMS waitlists and instantly pace the dining floor to eliminate the chaos of manual host stand calculations.",
+    route: "/features/host-stand",
+    cta: "Review Host Analytics",
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     ),
@@ -13,7 +15,9 @@ const featuresData = [
   },
   {
     title: "Kitchen Line",
-    desc: "Orders flow from the POS to the line instantly. Fire courses intelligently with smart pacing.",
+    desc: "Crush ticket times and eliminate line bottlenecks. Route KDS tickets with precision to stop misfires between expo and the line during a Friday night rush.",
+    route: "/features/kitchen-line",
+    cta: "Analyze Line Metrics",
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
     ),
@@ -21,8 +25,10 @@ const featuresData = [
     blob: "bg-[#F7D4D4]"
   },
   {
-    title: "Floor Servers",
-    desc: "Streamline service with real-time alerts. Know when food is ready without leaving your section.",
+   title: "Floor Servers",
+    desc: "Drive higher table turn-rates and inflate average check sizes. Equip staff with handheld billing and instant upsell prompts to turn tables faster while driving bigger tip percentages.",
+    route: "/features/floor-servers",
+    cta: "Inspect Server Tools",
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
     ),
@@ -31,7 +37,9 @@ const featuresData = [
   },
   {
     title: "Management",
-    desc: "Provide better oversight with a unified view of shift performance, turn times, and revenue.",
+    desc: "Plug shift margin leaks and optimize weekly labor percentages. Execute real-time food cost auditing and track labor variances by the hour before they destroy your profit margins.",
+    route: "/features/management",
+    cta: "Audit Admin Controls",
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
     ),
@@ -44,7 +52,7 @@ export default function Features() {
   return (
     <section className="relative py-24 md:py-32 bg-white overflow-hidden" id="features">
       <div className="container-custom">
-        <div className="text-center max-w-[700px] mx-auto mb-16 md:mb-24 px-4">
+        <div className="text-center max-w-175 mx-auto mb-16 md:mb-24 px-4">
           <h2 className="text-[clamp(2.5rem,5vw,4rem)] text-ink font-medium leading-[1.1] tracking-tight mb-6">
             Solutions for every station
           </h2>
@@ -61,28 +69,26 @@ export default function Features() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
-              className="group relative h-[460px] md:h-[420px] rounded-2xl p-[1px] overflow-hidden"
+              className="group relative h-115 md:h-105 rounded-2xl p-px overflow-hidden"
             >
-              {/* Colored blur blob */}
-              <div className={`absolute -top-32 -left-32 w-[350px] h-[350px] rounded-full blur-[80px] opacity-[0.4] pointer-events-none ${feature.blob}`}></div>
+              <div className={`absolute -top-32 -left-32 w-87.5 h-87.5 rounded-full blur-[80px] opacity-[0.4] pointer-events-none ${feature.blob}`}></div>
               
               <div className="relative h-full w-full rounded-2xl bg-white border border-line flex flex-col bg-opacity-80 backdrop-blur-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
                 <div className="h-[45%] w-full relative overflow-hidden shrink-0">
                   <img src={feature.image} alt={feature.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                  <div className={`absolute bottom-4 left-4 w-10 h-10 rounded-full flex items-center justify-center text-ink bg-white shadow-[0_4px_14px_rgba(0,0,0,0.1)] border border-line`}>
-                    {feature.icon}
-                  </div>
+                  <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent"></div>
+                 
                 </div>
                 <div className="p-6 md:p-8 flex flex-col flex-1">
                   <h3 className="text-xl md:text-2xl font-medium tracking-tight text-ink mb-3">{feature.title}</h3>
-                  <p className="text-ink-faint font-light text-[15px] leading-relaxed mb-auto">
-                    {feature.desc}
-                  </p>
+                 <p className="text-ink-faint font-light text-[15px] leading-relaxed mb-auto line-clamp-2 md:line-clamp-3">
+  {feature.desc}
+</p>
+
                   
-                  <a href="#cta" className="inline-flex items-center text-[14px] font-medium text-teal hover:text-teal-deep transition-colors mt-6">
-                    For {feature.title.toLowerCase()}
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 7 10" className="w-[7px] h-[10px] ml-1.5 mt-px group-hover:translate-x-1 transition-transform" aria-hidden="true"><path fill="currentColor" d="m0 9.501 6.998-3.844V4.343L0 .499V2.21L5.08 5 0 7.79z"></path></svg>
+                  <a href={feature.route} target='_blank' className="inline-flex items-center text-[14px] font-medium text-teal hover:text-teal-deep transition-colors mt-6">
+                    Learn More
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 7 10" className="w-1.75 h-2.5 ml-1.5 mt-px group-hover:translate-x-1 transition-transform" aria-hidden="true"><path fill="currentColor" d="m0 9.501 6.998-3.844V4.343L0 .499V2.21L5.08 5 0 7.79z"></path></svg>
                   </a>
                 </div>
               </div>

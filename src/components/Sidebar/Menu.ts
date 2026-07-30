@@ -18,7 +18,7 @@ interface SidebarItem {
 
 const menuItems: SidebarItem[] = [
   { icon: LayoutDashboard, title: "Overview", url: "/home" },
-  { icon: TrendingUp, title: "Analytics", url: "/analytics" },
+  // { icon: TrendingUp, title: "Analytics", url: "/analytics" },
   { icon: CalendarCheck, title: "Reservations", url: "/reservations" },
   { icon: ClipboardList, title: "Live Orders", url: "/orders" },
   { icon: ConciergeBell, title: "Menu & Dishes", url: "/dishes" },
