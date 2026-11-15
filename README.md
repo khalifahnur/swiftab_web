@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Swiftab Web
 
-## Getting Started
+The marketing site and restaurant dashboard for Swiftab (Next.js, App Router).
+It talks to the Go API in `swiftab-server`.
 
-First, run the development server:
+## Run
 
 ```bash
+cp .env.example .env.local
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+npm run typecheck   # TypeScript
+npm test            # unit tests for the floor-plan geometry
+npm run build       # production build
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_SWIFTAB_BASE_URL` | Base URL of the API including `/api/v2`, e.g. `https://api.swiftab.co.ke/api/v2`. Required. |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Optional. Enables "Find on map" address search in restaurant setup and Settings. Without it, the position comes from the browser's location or typed coordinates. |
 
-## Learn More
+The dashboard signs in with an HTTP-only cookie set by the API, so the API
+must allow this site's origin (see `ALLOWED_ORIGIN` in the server). For local
+development run the server with `APP_ENV=development`.
 
-To learn more about Next.js, take a look at the following resources:
+## What is where
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Area | Path |
+| --- | --- |
+| Landing page | `src/app/page.tsx`, `src/components/landing/` |
+| Dashboard shell (auth redirect, setup wizard, header) | `src/components/pages/DashboardLayout.tsx`, `src/components/Sidebar/` |
+| Restaurant setup wizard | `src/components/multiform/Container.tsx` |
+| Overview | `src/components/pages/dashboard/` |
+| Live orders | `src/components/pages/orderline/` |
+| Menu and sections | `src/components/pages/menu/` |
+| Floor plan editor and live view | `src/components/pages/table/floorplan/`, rules in `src/lib/floor.ts` |
+| Reservations | `src/components/pages/reservation/` |
+| Settings (restaurant, staff, promotions, account) | `src/components/pages/settings/` |
+| API client, hooks, types | `src/lib/api.ts`, `src/hooks/queries.ts`, `src/types/api.ts` |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Live updates come from the API's event stream (`src/hooks/useLiveEvents.ts`);
+the same data also polls, so the dashboard stays correct if the stream drops.

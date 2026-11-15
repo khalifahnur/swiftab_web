@@ -1,45 +1,7 @@
-"use client";
+import FloorPlan from "@/components/pages/table/floorplan/Container";
 
-import { FullScreenLoader } from "@/components/Loading/FullScreen";
-import Container from "@/components/pages/table/floorplan/Container";
-import { RestaurantLayout } from "@/components/pages/table/restaurantlayout";
-import { fetchRestaurantInfo } from "@/hooks/tablehook/fetchreslayout";
-import { useQuery } from "@tanstack/react-query";
-import React, { useState, useEffect } from "react";
+export const metadata = { title: "Floor plan" };
 
-export default function FloorPlans() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["diningAreas"],
-    queryFn: fetchRestaurantInfo,
-    staleTime: 1000 * 60 * 5,
-  });
-
-  useEffect(() => {
-    if (
-      (error && (error as Error).message === "Dining areas not found") ||
-      data?.diningAreas?.length === 0
-    ) {
-      setIsModalOpen(true);
-    }
-  }, [error, data]);
-
-  if (isLoading)
-    return (
-      <FullScreenLoader />
-    );
-
-  return (
-    <>
-      <div className="overflow-x-hidden overflow-y-hidden oswald">
-        <Container />
-      </div>
-      <RestaurantLayout isOpen={isModalOpen} onClose={handleCloseModal} />
-    </>
-  );
+export default function FloorPlanPage() {
+  return <FloorPlan />;
 }

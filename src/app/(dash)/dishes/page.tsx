@@ -1,8 +1,7 @@
 import Container from "@/components/pages/menu/Container";
-import React from "react";
+
+export const metadata = { title: "Menu" };
 
 export default function MenuPage() {
-  return (
-      <Container />
-  );
+  return <Container />;
 }

@@ -1,5 +1,6 @@
 import DashboardContainer from "@/components/pages/dashboard/Container";
-import React from "react";
+
+export const metadata = { title: "Overview" };
 
 export default function DashboardPage() {
   return <DashboardContainer />;

@@ -1,6 +1,13 @@
+import { Suspense } from "react";
 import Container from "@/components/pages/settings/Container";
-import React from "react";
+
+export const metadata = { title: "Settings" };
 
 export default function SettingPage() {
-  return <Container />;
+  // The page reads ?tab= from the URL, which needs a Suspense boundary.
+  return (
+    <Suspense>
+      <Container />
+    </Suspense>
+  );
 }

@@ -1,10 +1,6 @@
-import Container from '@/components/pages/account/Container'
-import React from 'react'
+import { redirect } from "next/navigation";
 
-export default function page() {
-  return (
-    <div>
-        <Container />
-    </div>
-  )
+// Account details now live under Settings.
+export default function AccountsPage() {
+  redirect("/settings?tab=account");
 }

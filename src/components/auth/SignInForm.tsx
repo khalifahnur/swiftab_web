@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLogin } from "@/hooks/authhook/authhooks";
+import { useAuth } from "@/components/auth/AuthContext";
+import { errorMessage } from "@/lib/axios";
 import { useEffect, useState } from "react";
 import { FullScreenLoader } from "../Loading/FullScreen";
 import { Eye, EyeOff } from "lucide-react";
@@ -35,16 +37,14 @@ export function SignInForm({
 
   const router = useRouter();
   const signInMutation = useLogin();
+  const { user } = useAuth();
 
+  // Someone who is already signed in has no use for this page.
   useEffect(() => {
-    if (signInMutation.isSuccess) {
-      toast.success(
-        "Welcome Back! Successfully logged into your management dashboard."
-      );
-      setLoading(true);
+    if (user && !signInMutation.isPending) {
       router.replace("/home");
     }
-  }, [signInMutation.isSuccess, signInMutation.isError, signInMutation.error, toast, router]);
+  }, [user, signInMutation.isPending, router]);
 
   return (
     <div className="w-full max-w-[400px] mx-auto flex flex-col bodyfont">
@@ -71,14 +71,11 @@ export function SignInForm({
           setError(null);
           try {
             await signInMutation.mutateAsync(values);
-          } catch (err: any) {
-            console.error("Login failed:", err);
-            const errorMessage =
-              err?.message ||
-              (err.statusCode === 401
-                ? "Invalid administrator credentials"
-                : "Authentication failed. Please verify your details.");
-            setError(errorMessage);
+            toast.success("Welcome back");
+            setLoading(true);
+            router.replace("/home");
+          } catch (err) {
+            setError(errorMessage(err, "Could not sign in. Please check your details."));
           } finally {
             setSubmitting(false);
           }
@@ -110,10 +107,10 @@ export function SignInForm({
                   Password
                 </Label>
                 <Link
-                  href="/forgot-password"
+                  href="/contact"
                   className="text-[13px] font-medium text-teal-600 hover:text-teal-700 hover:underline underline-offset-4 transition-all"
                 >
-                  Forgot password?
+                  Need help signing in?
                 </Link>
               </div>
               <div className="relative">

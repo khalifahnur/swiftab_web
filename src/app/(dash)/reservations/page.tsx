@@ -1,8 +1,7 @@
-import ReservationsPage from '@/components/pages/reservation/container'
-import React from 'react'
+import ReservationsPage from "@/components/pages/reservation/Container";
 
-export default function page() {
-  return (
-    <ReservationsPage />
-  )
+export const metadata = { title: "Reservations" };
+
+export default function Page() {
+  return <ReservationsPage />;
 }

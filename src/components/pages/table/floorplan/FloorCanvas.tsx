@@ -1,166 +1,259 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from 'react';
-import { Stage, Layer, Rect, Circle, Text, Group, Transformer, Path } from 'react-konva';
-import { TableItem } from '@/types/table';
+import { useEffect, useRef, useState } from "react";
+import { Circle, Group, Layer, Rect, Stage, Text, Transformer } from "react-konva";
+import type Konva from "konva";
+import { CANVAS, clampPosition, seatPositions, snap } from "@/lib/floor";
+import type { FloorTable, LiveTable } from "@/types/api";
 
-interface FloorCanvasProps {
-  tables: TableItem[];
-  selectedTableId: string | null;
+type LiveState = LiveTable["live"];
+
+interface Props {
+  tables: FloorTable[];
+  selectedId: string | null;
   onSelect: (id: string | null) => void;
-  onUpdateTransform: (id: string, x: number, y: number, rotation: number) => void;
-  onContextMenu: (id: string, x: number, y: number) => void;
+  /** Present in edit mode: called when a table is dropped or rotated. */
+  onTransform?: (id: string, change: { x: number; y: number; rotation: number }) => void;
+  /** Present in live mode: each table's current status, by table id. */
+  live?: Record<string, LiveState>;
 }
 
-const TableNode = ({ table, isSelected, onSelect, onUpdateTransform, onContextMenu }: any) => {
-  const shapeRef = useRef<any>(null);
-  const trRef = useRef<any>(null);
+const FONT = "Inter, ui-sans-serif, system-ui, sans-serif";
+
+/** Fill, outline and text colours for a table in each state. */
+function palette(state: LiveState["status"] | "edit", selected: boolean) {
+  switch (state) {
+    case "occupied":
+      return { fill: "#0f766e", stroke: "#0f766e", text: "#ffffff", sub: "#ccfbf1", chair: "#5eada5" };
+    case "reserved":
+      return { fill: "#fef3c7", stroke: "#f59e0b", text: "#78350f", sub: "#92400e", chair: "#fcd34d" };
+    case "free":
+      return { fill: "#ffffff", stroke: "#94a3b8", text: "#334155", sub: "#64748b", chair: "#cbd5e1" };
+    default:
+      return { fill: "#ffffff", stroke: selected ? "#008080" : "#94a3b8", text: "#1f2937", sub: "#6b7280", chair: selected ? "#7cc7c7" : "#cbd5e1" };
+  }
+}
+
+function liveCaption(state: LiveState): string {
+  if (state.status === "occupied") return state.guests ? `${state.guests} seated` : "Seated";
+  if (state.status === "reserved") {
+    const at = state.since ? new Date(state.since).toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" }) : "";
+    return at ? `Booked ${at}` : "Reserved";
+  }
+  return "Free";
+}
+
+function TableNode({
+  table,
+  selected,
+  editable,
+  state,
+  scale,
+  onSelect,
+  onTransform,
+}: {
+  table: FloorTable;
+  selected: boolean;
+  editable: boolean;
+  state?: LiveState;
+  /** Canvas zoom, used to keep labels a readable size on screen. */
+  scale: number;
+  onSelect: (id: string) => void;
+  onTransform?: Props["onTransform"];
+}) {
+  const group = useRef<Konva.Group>(null);
+  const transformer = useRef<Konva.Transformer>(null);
+  const { width, height } = table.size;
+  const cx = width / 2;
+  const cy = height / 2;
+  const colors = palette(state ? state.status : "edit", selected);
+  // Aim for about 13px and 10.5px on screen, within what fits a small table.
+  const nameSize = Math.min(22, Math.max(14, 13 / scale));
+  const captionSize = Math.min(17, Math.max(11, 10.5 / scale));
 
   useEffect(() => {
-    if (isSelected && trRef.current && shapeRef.current) {
-      trRef.current.nodes([shapeRef.current]);
-      trRef.current.getLayer().batchDraw();
+    if (selected && editable && transformer.current && group.current) {
+      transformer.current.nodes([group.current]);
+      transformer.current.getLayer()?.batchDraw();
     }
-  }, [isSelected]);
+  }, [selected, editable, width, height]);
 
-  const cx = table.size.width / 2;
-  const cy = table.size.height / 2;
-
-  const getChairPos = (index: number, total: number) => {
-    if (total === 0) return { x: 0, y: 0, rotation: 0 }; 
-    const offset = 22; 
-    if (table.shape === 'round') {
-      const angle = (index / total) * 2 * Math.PI;
-      const rx = cx + offset;
-      const ry = cy + offset;
-      return { x: cx + Math.sin(angle) * rx, y: cy - Math.cos(angle) * ry, rotation: angle * (180 / Math.PI) };
-    } else {
-      const perSide = Math.ceil(total / 4);
-      const side = Math.floor(index / perSide);
-      const sidePercent = ((index % perSide) + 0.5) / perSide;
-      
-      switch (side) {
-        case 0: return { x: sidePercent * table.size.width, y: -offset, rotation: 0 }; 
-        case 1: return { x: table.size.width + offset, y: sidePercent * table.size.height, rotation: 90 }; 
-        case 2: return { x: (1 - sidePercent) * table.size.width, y: table.size.height + offset, rotation: 180 }; 
-        case 3: return { x: -offset, y: (1 - sidePercent) * table.size.height, rotation: 270 }; 
-        default: return { x: 0, y: 0, rotation: 0 };
-      }
-    }
+  const report = () => {
+    const node = group.current;
+    if (!node || !onTransform) return;
+    const position = clampPosition(snap(node.x() - cx), snap(node.y() - cy), width, height);
+    // Put the node exactly where the saved position says it is.
+    node.position({ x: position.x + cx, y: position.y + cy });
+    onTransform(table.id, { ...position, rotation: Math.round(node.rotation()) });
   };
 
   return (
-    <React.Fragment>
+    <>
       <Group
-        ref={shapeRef}
+        ref={group}
         x={table.position.x + cx}
         y={table.position.y + cy}
         offsetX={cx}
         offsetY={cy}
         rotation={table.rotation}
-        draggable
-        onClick={(e) => { e.cancelBubble = true; onSelect(table.id); }}
-        onTap={(e) => { e.cancelBubble = true; onSelect(table.id); }}
-        onContextMenu={(e) => {
-          e.evt.preventDefault();
-          e.cancelBubble = true;
-          onSelect(table.id);
-          onContextMenu(table.id, e.evt.clientX, e.evt.clientY);
-        }}
-        onDragStart={(e) => { onSelect(table.id); e.target.moveToTop(); }}
-        onDragEnd={(e) => {
-          onUpdateTransform(table.id, Math.round(e.target.x() - cx), Math.round(e.target.y() - cy), e.target.rotation());
-        }}
+        draggable={editable}
+        onMouseDown={() => onSelect(table.id)}
+        onTap={() => onSelect(table.id)}
+        onDragStart={(e) => e.target.moveToTop()}
+        onDragEnd={report}
         onTransformEnd={() => {
-          const node = shapeRef.current;
-          node.scaleX(1); node.scaleY(1);
-          onUpdateTransform(table.id, Math.round(node.x() - cx), Math.round(node.y() - cy), Math.round(node.rotation()));
+          group.current?.scale({ x: 1, y: 1 });
+          report();
+        }}
+        onMouseEnter={(e) => {
+          const stage = e.target.getStage();
+          if (stage) stage.container().style.cursor = editable ? "grab" : "pointer";
+        }}
+        onMouseLeave={(e) => {
+          const stage = e.target.getStage();
+          if (stage) stage.container().style.cursor = "default";
         }}
       >
-        {table.chairs.map((chair: any, i: number) => {
-          const pos = getChairPos(i, table.chairs.length);
-          return (
-            <Group key={chair.id} x={pos.x} y={pos.y} rotation={pos.rotation}>
-              <Path data="M -12 -10 Q 0 -15 12 -10 L 10 5 L -10 5 Z" fill="#f1f5f9" shadowColor="#000" shadowBlur={4} shadowOpacity={0.1} shadowOffsetY={2} />
-              <Rect x={-10} y={-4} width={20} height={16} cornerRadius={4} fill="#ffffff" stroke="#e2e8f0" strokeWidth={1} shadowColor="#000" shadowBlur={2} shadowOpacity={0.05} />
-            </Group>
-          );
-        })}
+        {seatPositions(table).map((seat, index) => (
+          <Rect
+            key={index}
+            x={seat.x}
+            y={seat.y}
+            offsetX={12}
+            offsetY={7}
+            width={24}
+            height={14}
+            cornerRadius={6}
+            rotation={seat.rotation}
+            fill={colors.chair}
+          />
+        ))}
 
-        {table.shape === 'round' ? (
-           <Circle x={cx} y={cy} radius={cx} fill="#ffffff" shadowColor="rgba(0,0,0,0.15)" shadowBlur={25} shadowOffsetY={10} />
+        {table.shape === "round" ? (
+          <Circle
+            x={cx}
+            y={cy}
+            radius={cx}
+            fill={colors.fill}
+            stroke={colors.stroke}
+            strokeWidth={selected ? 2.5 : 1.5}
+            shadowColor="#0f172a"
+            shadowOpacity={0.08}
+            shadowBlur={10}
+            shadowOffsetY={3}
+          />
         ) : (
-           <Rect x={0} y={0} width={table.size.width} height={table.size.height} cornerRadius={4} fill="#ffffff" shadowColor="rgba(0,0,0,0.15)" shadowBlur={25} shadowOffsetY={10} />
+          <Rect
+            width={width}
+            height={height}
+            cornerRadius={12}
+            fill={colors.fill}
+            stroke={colors.stroke}
+            strokeWidth={selected ? 2.5 : 1.5}
+            shadowColor="#0f172a"
+            shadowOpacity={0.08}
+            shadowBlur={10}
+            shadowOffsetY={3}
+          />
         )}
 
-        <Text text={table.name} x={0} y={cy - 16} width={table.size.width} align="center" fontSize={16} fontStyle="bold" fill="#4b5563" />
-
-        {/* <Group x={cx - 30} y={cy + 8}>
-          <Rect width={60} height={20} cornerRadius={2} fill={table.status === 'Free' ? '#5E8B83' : '#374151'} />
-          <Text text={table.status} width={60} y={4} align="center" fontSize={11} fontStyle="bold" fill="#ffffff" />
-        </Group> */}
+        {/* The label stays upright however the table is turned. */}
+        <Group x={cx} y={cy} rotation={-table.rotation} listening={false}>
+          <Text
+            text={table.name}
+            x={-cx}
+            y={-nameSize}
+            width={width}
+            align="center"
+            fontFamily={FONT}
+            fontSize={nameSize}
+            fontStyle="600"
+            fill={colors.text}
+            wrap="none"
+            ellipsis
+          />
+          <Text
+            text={state ? liveCaption(state) : `${table.chairs.length} seat${table.chairs.length === 1 ? "" : "s"}`}
+            x={-cx}
+            y={4}
+            width={width}
+            align="center"
+            fontFamily={FONT}
+            fontSize={captionSize}
+            fill={colors.sub}
+            wrap="none"
+            ellipsis
+          />
+        </Group>
       </Group>
 
-      {isSelected && (
+      {selected && editable && (
         <Transformer
-          ref={trRef}
+          ref={transformer}
+          resizeEnabled={false}
           rotationSnaps={[0, 45, 90, 135, 180, 225, 270, 315]}
-          resizeEnabled={false} 
-          borderStroke="#6b7280"
-          borderDash={[4, 4]}
-          anchorSize={8}
-          anchorCornerRadius={4}
-          anchorStroke="#6b7280"
+          rotationSnapTolerance={8}
+          rotateAnchorOffset={28}
+          borderStroke="#008080"
+          borderDash={[5, 4]}
+          anchorSize={10}
+          anchorCornerRadius={5}
+          anchorStroke="#008080"
           anchorFill="#ffffff"
         />
       )}
-    </React.Fragment>
+    </>
   );
-};
+}
 
-export default function FloorCanvas({ tables, selectedTableId, onSelect, onUpdateTransform, onContextMenu }: FloorCanvasProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+/** The drawing surface: scales the fixed layout area to the space available. */
+export default function FloorCanvas({ tables, selectedId, onSelect, onTransform, live }: Props) {
+  const container = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
 
   useEffect(() => {
-    const el = containerRef.current;
+    const el = container.current;
     if (!el) return;
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        setDimensions({ width: entry.contentRect.width, height: entry.contentRect.height });
-      }
-    });
-    resizeObserver.observe(el);
-    return () => resizeObserver.disconnect();
+    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
-  // BUG FIX: Do not render the Konva Stage until dimensions are successfully calculated!
-  if (dimensions.width === 0 || dimensions.height === 0) {
-    return <div ref={containerRef} className="w-full h-full relative" />;
-  }
+  // Never shrink below a usable size; narrow screens scroll sideways instead.
+  const stageWidth = Math.max(width, 640);
+  const scale = stageWidth / CANVAS.width;
 
   return (
-    <div 
-      ref={containerRef} 
-      className="w-full h-full relative" 
-      onClick={() => onSelect(null)}
-      onContextMenu={(e) => e.preventDefault()} 
-      style={{ cursor: selectedTableId ? 'default' : 'grab' }}
-    >
-      <Stage width={dimensions.width} height={dimensions.height}>
-        <Layer>
-          {tables.map((table) => (
-            <TableNode 
-              key={table.id} 
-              table={table} 
-              isSelected={selectedTableId === table.id} 
-              onSelect={onSelect} 
-              onUpdateTransform={onUpdateTransform} 
-              onContextMenu={onContextMenu}
-            />
-          ))}
-        </Layer>
-      </Stage>
+    <div ref={container} className="w-full overflow-x-auto">
+      {width > 0 && (
+        <Stage
+          width={stageWidth}
+          height={CANVAS.height * scale}
+          scaleX={scale}
+          scaleY={scale}
+          onMouseDown={(e) => {
+            if (e.target === e.target.getStage()) onSelect(null);
+          }}
+          onTouchStart={(e) => {
+            if (e.target === e.target.getStage()) onSelect(null);
+          }}
+        >
+          <Layer>
+            {tables.map((table) => (
+              <TableNode
+                key={table.id}
+                table={table}
+                selected={selectedId === table.id}
+                editable={Boolean(onTransform)}
+                scale={scale}
+                state={live ? (live[table.id] ?? { status: "free", guests: 0 }) : undefined}
+                onSelect={onSelect}
+                onTransform={onTransform}
+              />
+            ))}
+          </Layer>
+        </Stage>
+      )}
     </div>
   );
 }

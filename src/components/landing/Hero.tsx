@@ -1,107 +1,116 @@
-"use client"
-import { motion, AnimatePresence } from 'motion/react';
+"use client";
+
+import Link from "next/link";
+import { motion, useReducedMotion } from "motion/react";
+import { ArrowRight, ChevronsRight } from "lucide-react";
+import HeroFloor from "./HeroFloor";
+
+const channels = ["Reservations", "Floor plan", "Live orders", "M-Pesa · Card · Cash"];
 
 export default function Hero() {
-  return (
-    <section className="bg-paper-dim pt-32 md:pt-40 pb-10 md:pb-20 overflow-hidden relative" id="hero"> 
-      <svg width="0" height="0" className="absolute pointer-events-none">
-        <defs>
-          <clipPath id="modernSaaSShape" clipPathUnits="objectBoundingBox">
-            <path d="M 0.064,0 
-                     L 0.6,0 
-                     C 0.821,0, 1,0.224, 1,0.5 
-                     L 1,0.92 
-                     C 1,0.964, 0.971,1, 0.936,1 
-                     L 0.4,1 
-                     C 0.179,1, 0,0.776, 0,0.5 
-                     L 0,0.08 
-                     C 0,0.036, 0.029,0, 0.064,0 
-                     Z" />
-          </clipPath>
-        </defs>
-      </svg>
+  const reduceMotion = useReducedMotion();
+  const rise = (delay: number) =>
+    reduceMotion
+      ? {}
+      : {
+          initial: { opacity: 0, y: 18 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] as const },
+        };
 
-      <div className="container-custom relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center">
-        <div className="flex flex-col items-start max-lg:items-center max-lg:text-center max-w-150 mx-auto lg:mx-0">          
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-[clamp(2.5rem,6vw,4.5rem)] displayfont font-display font-medium leading-[1.05] tracking-tight text-ink mb-6"
-          >
-            Run your restaurant, <span className="italic text-teal/80">smart and seamless.</span>
-          </motion.h1>
-          
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-[clamp(1.125rem,2vw,1.25rem)] bodyfont text-ink-faint leading-relaxed mb-10 max-lg:max-w-125"
-          >
-            The world's best restaurants use Swiftab to power table management, handle reservations & live orders, and grow revenue across all services.
-          </motion.p>
-        </div>
-        
-        <motion.div
-            initial={{ opacity: 0, scale: 0.9 }} 
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} 
-            className="relative w-full aspect-[5/4] max-w-212.5 mx-auto mt-10 lg:mt-0 flex flex-col items-center justify-center group"
-          >
-            {/* Soft, glowing backdrop tailored to match your dynamic shape scale */}
-            <div className="absolute inset-0 bg-teal/15 rounded-[3rem] blur-[60px] transform group-hover:scale-105 transition-transform duration-1000 opacity-90 pointer-events-none"></div>
-            
-            {/* 
-              The Video Wrapper. 
-              Replaced mask styles with the modern inline hardware-accelerated clipPath.
-            */}
-            <div 
-              className="relative w-full h-full z-10 p-2"
-              style={{ clipPath: 'url(#modernSaaSShape)' }}
-            >
-              <div className="w-full h-full relative overflow-hidden bg-white">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="absolute inset-0 flex items-center justify-center bg-white"
-                  >
-                      <video
-                        src={'/swiftab/videos/dashboard-video.mp4'}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className="w-full h-full object-cover object-top"
-                      />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+  return (
+    <section id="hero" className="bg-paper pt-[124px] md:pt-[136px] pb-10 md:pb-14">
+      <div className="mx-auto max-w-[1400px] px-3 sm:px-5">
+        <div className="relative isolate overflow-hidden rounded-[28px] md:rounded-[40px] bg-[#062B29] text-white">
+          {/* Deep-green stage with the brand's curved side panels. */}
+          <div
+            aria-hidden
+            className="absolute inset-0 -z-10 bg-[radial-gradient(120%_90%_at_50%_0%,#0F5F59_0%,#0A423E_38%,#062B29_72%)]"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -left-[50%] top-1/2 -z-10 hidden aspect-square w-[62%] -translate-y-1/2 rounded-full border border-white/10 bg-white/[0.03] md:block"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-[50%] top-1/2 -z-10 hidden aspect-square w-[62%] -translate-y-1/2 rounded-full border border-white/10 bg-white/[0.03] md:block"
+          />
+
+          <div className="grid items-center gap-12 px-6 py-14 sm:px-10 md:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-10 lg:px-16 lg:py-24">
+            <div className="mx-auto flex max-w-[560px] flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
+              <motion.p
+                {...rise(0)}
+                className="monofont mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.16em] text-emerald-100/90"
+              >
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75 motion-reduce:hidden" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-300" />
+                </span>
+                For hosts, waiters and managers
+              </motion.p>
+
+              <motion.h1
+                {...rise(0.08)}
+                className="bodyfont text-balance text-[clamp(2.6rem,6.2vw,4.6rem)] font-medium leading-[1.02] tracking-[-0.025em]"
+              >
+                A full house,{" "}
+                <span className="italic text-emerald-300">under control.</span>
+              </motion.h1>
+
+              <motion.p
+                {...rise(0.16)}
+                className="bodyfont mt-6 max-w-[520px] text-pretty text-[1.0625rem] leading-relaxed text-emerald-50/75 md:text-[1.15rem]"
+              >
+                Swiftab runs your reservations, floor plan, live orders and payments in one place.
+                Hosts seat faster, waiters serve sooner, and you watch the whole night as it happens.
+              </motion.p>
+
+              <motion.div
+                {...rise(0.24)}
+                className="mt-9 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row"
+              >
+                <Link
+                  href="/signup"
+                  className="group inline-flex h-14 w-full items-center justify-between gap-6 rounded-full bg-white pl-7 pr-2 text-[15px] font-semibold text-[#062B29] shadow-[0_12px_30px_-10px_rgba(0,0,0,0.6)] transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-300 sm:w-auto"
+                >
+                  Start for free
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0A423E] text-white transition-colors group-hover:bg-teal">
+                    <ChevronsRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+                <a
+                  href="#features"
+                  className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full border border-white/20 px-7 text-[15px] font-medium text-white transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-300 sm:w-auto"
+                >
+                  See how it works
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+              </motion.div>
+
+              <motion.p {...rise(0.3)} className="monofont mt-5 text-[12px] tracking-wide text-emerald-100/55">
+                14-day free trial · No card required
+              </motion.p>
             </div>
-            
-            {/* Subtle retro dot pattern anchor positioned cleanly behind the shape */}
-            <div className="absolute -z-10 -right-4 -bottom-4 w-48 h-48 opacity-30 bg-[radial-gradient(circle,rgba(0,128,128,0.3)_1.5px,transparent_1.5px)] bg-[length:16px_16px]"></div>
-        </motion.div>
-      </div>
-      
-      <div className="container-custom relative z-10 mt-20 md:mt-32">
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="w-full"
-        >
-          <h2 className="text-[14px] md:text-[15px] font-medium text-ink-faint mb-8 text-center tracking-wide">Trusted by over 38,000 restaurants globally</h2>
-          <div className="flex flex-wrap justify-center items-center gap-x-8 md:gap-x-16 gap-y-8 opacity-40 grayscale">
-             <div className="text-xl md:text-2xl font-bold font-display tracking-tight">OSTERIA</div>
-             <div className="text-xl md:text-2xl font-bold font-display tracking-tight">LUMEN</div>
-             <div className="text-xl md:text-2xl font-bold font-display tracking-tight">NOMAD</div>
-             <div className="text-xl md:text-2xl font-bold font-display tracking-tight">GUSTO</div>
-             <div className="text-xl md:text-2xl font-bold font-display tracking-tight">ELEVEN</div>
+
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, y: 28, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="relative mx-auto w-full max-w-[560px] lg:max-w-none"
+            >
+              <HeroFloor />
+            </motion.div>
           </div>
-        </motion.div>
+
+          <ul className="monofont flex flex-wrap items-center justify-center gap-x-8 gap-y-2 border-t border-white/10 px-6 py-5 text-[11px] uppercase tracking-[0.18em] text-emerald-100/60">
+            {channels.map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <span aria-hidden className="h-1 w-1 rounded-full bg-emerald-300/70" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   );

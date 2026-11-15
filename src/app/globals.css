@@ -370,7 +370,8 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  /* Brand teal, so shared controls (switches, default buttons) match the product. */
+  --primary: #008080;
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -466,4 +467,20 @@ body {
 }
 .monofont {
   font-family: var(--font-mono);
+}
+/* Printing an order prints only its receipt, not the dashboard around it. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #receipt,
+  #receipt * {
+    visibility: visible;
+  }
+  #receipt {
+    position: fixed;
+    inset: 0 auto auto 0;
+    width: 100%;
+    padding: 24px;
+  }
 }

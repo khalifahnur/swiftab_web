@@ -3,8 +3,6 @@
 import { Fragment, useState } from "react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import { fetchLogout } from "@/hooks/authhook/authhooks";
 import { useAuth } from "@/components/auth/AuthContext";
 import menuItems from "./Menu";
 import { cn } from "@/lib/utils";
@@ -38,10 +36,8 @@ import {
   LogOut,
   Hexagon,
   HelpCircle,
-  Headset,
   Loader2,
 } from "lucide-react";
-import toast from "react-hot-toast";
 import Link from "next/link";
 
 type MenuItem = (typeof menuItems)[number];
@@ -61,7 +57,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, signOut } = useAuth();
   const [openGroups, setOpenGroups] = useState<string[]>([]);
   const [logoFailed, setLogoFailed] = useState(false);
 
@@ -73,17 +69,11 @@ export function AppSidebar() {
     );
   };
 
-  const logoutMutation = useMutation<void, Error, void>({
-    mutationFn: fetchLogout,
-    onSuccess: () => {
-      toast.success("Logged out");
-      localStorage.clear();
-      router.replace("/signin");
-    },
-    onError: () => {
-      toast.error("Logout failed");
-    },
-  });
+  const [signingOut, setSigningOut] = useState(false);
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    await signOut();
+  };
 
   const renderMenuItem = (item: MenuItem) => {
     const isChildActive =
@@ -103,9 +93,10 @@ export function AppSidebar() {
             onClick={() => item.children && toggleGroup(item.title)}
             className={cn(
               "h-10 rounded-lg px-3 transition-all duration-200 gap-3",
+              // The base button paints its own active colours, so these win with data-active.
               isActive
-                ? "bg-[#0f766e] text-white shadow-md shadow-[#0f766e]/20 hover:bg-[#0f766e] hover:text-white"
-                : "text-slate-400 hover:bg-white/5 hover:text-white",
+                ? "bg-teal text-white shadow-md shadow-teal/20 hover:bg-teal hover:text-white data-active:bg-teal data-active:text-white"
+                : "text-slate-400 hover:bg-white/5 hover:text-white active:bg-white/10 active:text-white",
             )}
           >
             <Link
@@ -268,36 +259,29 @@ export function AppSidebar() {
                   
                   <DropdownMenuGroup>
                     <DropdownMenuItem
-                      onClick={() => router.push("/help")}
+                      onClick={() => router.push("/contact")}
                       className="w-full cursor-pointer rounded-lg py-2.5 px-3 text-slate-300 focus:bg-white/10 focus:text-white font-medium flex items-center gap-2"
                     >
                       <HelpCircle className="h-4 w-4" />
-                      <span>Help Center</span>
+                      <span>Help &amp; contact</span>
                     </DropdownMenuItem>
                     
-                    <DropdownMenuItem
-                      onClick={() => router.push("/support")}
-                      className="w-full cursor-pointer rounded-lg py-2.5 px-3 text-slate-300 focus:bg-white/10 focus:text-white font-medium flex items-center gap-2"
-                    >
-                      <Headset className="h-4 w-4" />
-                      <span>Live Support</span>
-                    </DropdownMenuItem>
                   </DropdownMenuGroup>
 
                   <DropdownMenuSeparator className="my-1 bg-white/10" />
                   <DropdownMenuGroup>
                     <DropdownMenuItem
-                      onClick={() => logoutMutation.mutate()}
-                      disabled={logoutMutation.isPending}
+                      onClick={handleSignOut}
+                      disabled={signingOut}
                       className="cursor-pointer rounded-lg py-2.5 px-3 text-red-400 focus:bg-red-500/10 focus:text-red-400 font-medium flex items-center gap-2"
                     >
-                      {logoutMutation.isPending ? (
+                      {signingOut ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <LogOut className="h-4 w-4" />
                       )}
                       <span>
-                        {logoutMutation.isPending
+                        {signingOut
                           ? "Logging out…"
                           : "Log out"}
                       </span>

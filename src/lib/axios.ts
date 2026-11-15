@@ -1,39 +1,40 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
+/**
+ * The dashboard authenticates with an HTTP-only session cookie set by the API,
+ * so requests only need to be sent with credentials.
+ */
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_SWIFTAB_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-    "Accept": "application/json"
-  },
+  headers: { Accept: "application/json" },
   withCredentials: true,
 });
 
-apiClient.interceptors.request.use((config) => {
-  if (typeof document !== 'undefined') {
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("access_token=="))
-      ?.split("=")[1];
+/** Base URL of the API, for things axios does not handle (the live event stream). */
+export const API_BASE_URL = (process.env.NEXT_PUBLIC_SWIFTAB_BASE_URL ?? "").replace(/\/$/, "");
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+/**
+ * Turns any failed request into a message a person can act on. The API puts
+ * its explanation under both `error` and `message`.
+ */
+export function errorMessage(error: unknown, fallback = "Something went wrong. Please try again."): string {
+  if (axios.isAxiosError(error)) {
+    const data = (error as AxiosError<{ error?: string; message?: string }>).response?.data;
+    if (data && typeof data === "object") {
+      return data.error || data.message || fallback;
     }
-  }
-
-  return config;
-});
-
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      if (typeof document !== 'undefined') {
-        document.cookie = "admin_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      }
+    if (!error.response) {
+      return "We couldn't reach the server. Check your connection and try again.";
     }
-    return Promise.reject(error);
+    return fallback;
   }
-);
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+}
+
+/** True when the API says the session is missing or expired. */
+export function isUnauthorized(error: unknown): boolean {
+  return axios.isAxiosError(error) && error.response?.status === 401;
+}
 
 export default apiClient;
