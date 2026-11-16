@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLogin } from "@/hooks/authhook/authhooks";
+import { useAuth } from "@/components/auth/AuthContext";
+import { errorMessage } from "@/lib/axios";
 import { useEffect, useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { FullScreenLoader } from "../Loading/FullScreen";
-import { Eye, EyeOff, ChevronRight } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
+import Link from "next/link";
 
 interface AdminSignInFormProps {
   onToggleView?: () => void;
@@ -34,44 +37,29 @@ export function SignInForm({
 
   const router = useRouter();
   const signInMutation = useLogin();
-  const { toast } = useToast();
+  const { user } = useAuth();
 
+  // Someone who is already signed in has no use for this page.
   useEffect(() => {
-    if (signInMutation.isSuccess) {
-      toast({
-        title: "Welcome Back!",
-        description: "Successfully logged into your management dashboard.",
-        variant: "default",
-      });
-      setLoading(true);
-      router.replace("/dash");
+    if (user && !signInMutation.isPending) {
+      router.replace("/home");
     }
-
-    if (signInMutation.isError) {
-      const errorMessage = signInMutation.error?.message;
-      toast({
-        title: "Authentication Error",
-        description: errorMessage || "Please check your credentials and try again.",
-        variant: "destructive",
-      });
-    }
-  }, [signInMutation.isSuccess, signInMutation.isError, signInMutation.error, toast, router]);
+  }, [user, signInMutation.isPending, router]);
 
   return (
-    <div className="w-full max-w-sm mx-auto flex flex-col oswald">
+    <div className="w-full max-w-[400px] mx-auto flex flex-col bodyfont">
       {loading && <FullScreenLoader />}
-
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
+      <div className="mb-8 text-left">
+        <h2 className="text-3xl font-semibold text-slate-900 tracking-tight mb-2">
           Welcome back
         </h2>
-        <p className="text-sm text-gray-500 font-medium">
+        <p className="text-[15px] text-slate-500">
           Sign in to manage {restaurantName}
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm font-medium text-center">
+        <div className="mb-6 p-3.5 rounded-xl bg-red-50 border border-red-100 text-red-600 text-[14px] font-medium text-center shadow-sm">
           {error}
         </div>
       )}
@@ -83,14 +71,11 @@ export function SignInForm({
           setError(null);
           try {
             await signInMutation.mutateAsync(values);
-          } catch (err: any) {
-            console.error("Login failed:", err);
-            const errorMessage =
-              err?.message ||
-              (err.statusCode === 401
-                ? "Invalid administrator credentials"
-                : "Authentication failed. Please verify your details.");
-            setError(errorMessage);
+            toast.success("Welcome back");
+            setLoading(true);
+            router.replace("/home");
+          } catch (err) {
+            setError(errorMessage(err, "Could not sign in. Please check your details."));
           } finally {
             setSubmitting(false);
           }
@@ -98,9 +83,8 @@ export function SignInForm({
       >
         {({ isSubmitting }) => (
           <Form className="space-y-5">
-            {/* Email Input */}
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+            <div className="flex flex-col">
+              <Label htmlFor="email" className="text-[14px] font-medium text-slate-700 mb-1.5">
                 Administrator Email
               </Label>
               <Field
@@ -108,29 +92,26 @@ export function SignInForm({
                 as={Input}
                 type="email"
                 autoComplete="email"
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 shadow-sm focus:bg-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all duration-200 outline-none"
                 placeholder="admin@restaurant.com"
               />
               <ErrorMessage
                 name="email"
                 component="div"
-                className="text-red-500 text-xs font-medium mt-1"
+                className="text-red-500 text-[12px] font-medium mt-1.5 ml-1"
               />
             </div>
-
-            {/* Password Input */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-semibold text-gray-700">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-1.5">
+                <Label htmlFor="password" className="text-[14px] font-medium text-slate-700">
                   Password
                 </Label>
-                <button
-                  type="button"
-                  onClick={() => router.push("/forgot-password")}
-                  className="text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors"
+                <Link
+                  href="/contact"
+                  className="text-[13px] font-medium text-teal-600 hover:text-teal-700 hover:underline underline-offset-4 transition-all"
                 >
-                  Forgot password?
-                </button>
+                  Need help signing in?
+                </Link>
               </div>
               <div className="relative">
                 <Field
@@ -138,12 +119,12 @@ export function SignInForm({
                   as={Input}
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
-                  className="w-full px-4 py-2.5 pr-10 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                  className="w-full px-4 py-3 pr-11 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 shadow-sm focus:bg-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all duration-200 outline-none"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
                   onClick={() => setShowPassword(!showPassword)}
                   tabIndex={-1}
                 >
@@ -153,51 +134,37 @@ export function SignInForm({
               <ErrorMessage
                 name="password"
                 component="div"
-                className="text-red-500 text-xs font-medium mt-1"
+                className="text-red-500 text-[12px] font-medium mt-1.5 ml-1"
               />
             </div>
-
-            {/* Submit Button */}
             <Button
               type="submit"
               disabled={isSubmitting || loading}
-              className="w-full py-2.5 mt-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg shadow-sm hover:shadow transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-[52px] mt-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-[15px] rounded-xl shadow-[0_8px_16px_-4px_rgba(13,148,136,0.25)] hover:shadow-[0_12px_20px_-4px_rgba(13,148,136,0.3)] hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {loading || isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
+                  <div className="animate-spin h-5 w-5 border-2 border-white/30 border-t-white rounded-full" />
                   <span>Signing in...</span>
                 </div>
               ) : (
                 <span>Sign In to Dashboard</span>
               )}
             </Button>
-
-            {/* Footer Links */}
-            <div className="pt-6 text-center">
-              <p className="text-sm text-gray-600">
+            <div className="pt-5 text-center border-t border-slate-100 mt-6">
+              <p className="text-[14px] text-slate-500">
                 Don't have an admin account?{" "}
-                <button
-                  type="button"
-                  onClick={() => router.push("/signup")}
-                  className="text-teal-600 font-semibold hover:text-teal-700 inline-flex items-center transition-colors"
+                <Link
+                  href="/signup"
+                  className="text-teal-600 font-medium hover:text-teal-700 hover:underline underline-offset-4 transition-all inline-flex items-center"
                 >
-                  Create one <ChevronRight size={14} className="ml-0.5 mt-0.5" />
-                </button>
+                  Create one
+                </Link>
               </p>
             </div>
           </Form>
         )}
       </Formik>
-      
-      <div className="mt-8 text-center">
-        <p className="text-xs text-gray-400">
-          Need support? Contact{" "}
-          <a href="mailto:support@swiftab.com" className="hover:text-gray-600 transition-colors">
-            support@swiftab.com
-          </a>
-        </p>
-      </div>
     </div>
   );
 }

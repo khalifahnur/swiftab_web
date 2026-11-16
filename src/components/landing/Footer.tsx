@@ -1,125 +1,221 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import React from 'react';
+"use client";
+
+import React from "react";
+import Image from "next/image";
+
 
 export default function Footer() {
+
+  const year = new Date().getFullYear();
+  const socialLinksData = [
+    {
+      name: "Instagram",
+
+      src: "/swiftab/socials/instagram.svg", 
+      url: "https://www.instagram.com/reel/DafJ1htIGtr/?igsh=MWQ0cmhibjdpb2Q4ZA==",
+    },
+    {
+      name: "Facebook",
+      src: "/swiftab/socials/facebook.svg",
+      url: "https://www.facebook.com/share/v/1JFZxLYXgW/",
+    },
+    {
+      name: "TikTok",
+      src: "/swiftab/socials/tiktok.svg",
+      url: "#",
+    },
+    {
+      name: "X",
+      src: "/swiftab/socials/x.svg",
+      url: "#",
+    },
+  ];
+
   return (
-   <footer className="w-full oswald" id='support'>
-    <div className="bg-primary/60 text-gray-950 py-20 px-6 relative overflow-hidden">
-      <div className="max-w-6xl mx-auto relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-        <div className="max-w-xl">
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">Take Control of Your Restaurant Today!</h2>
-          <p className="text-primary-100 text-lg mb-8">Streamline your front-of-house, track table turns, and manage your staff efficiently with our powerful dashboard.</p>
-          
-          <div className="flex items-center gap-8 mb-8">
-            <div>
-              <div className="text-3xl font-bold">25%</div>
-              <div className="text-primary-20 text-sm">Faster Table Turns</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold">500+</div>
-              <div className="text-primary-20 text-sm">Restaurants Empowered</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold">99.9%</div>
-              <div className="text-primary-20 text-sm">Uptime Guarantee</div>
-            </div>
-          </div>
-          
-          <button className="bg-white text-primary font-bold px-8 py-4 rounded-lg shadow-lg hover:bg-gray-50 transition-all">
-            Request a Demo
-          </button>
-        </div>
-        
-
-        <div className="w-full md:w-1/2 h-64 bg-primary/50 rounded-2xl border border-blue-400/50 backdrop-blur-sm flex items-center justify-center p-6 transform rotate-2 translate-x-12 hidden md:flex">
-             <div className="w-full h-full bg-white rounded-xl shadow-2xl p-4 flex flex-col">
-                <div className="h-4 w-1/3 bg-gray-200 rounded mb-4"></div>
-                <div className="flex gap-4 flex-1">
-                   <div className="w-1/4 bg-blue-50 rounded-lg border border-blue-100"></div>
-                   <div className="flex-1 bg-gray-50 rounded-lg border border-gray-100 p-4">
-                      <div className="grid grid-cols-3 gap-2 h-full">
-                         {[...Array(6)].map((_, i) => <div key={i} className="bg-gray-200 rounded-md"></div>)}
-                      </div>
-                   </div>
-                </div>
-             </div>
-        </div>
-      </div>
-    </div>
-
-    <div className="bg-white py-16 px-6 border-t border-gray-100">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-8">
-        <div className="col-span-1 md:col-span-1">
-           <Link href="/" className="shrink-0">
-        <div className="h-10 w-15 md:h-16 md:w-32 transition-transform duration-300 hover:scale-105 flex items-center justify-center">
-          <Image
-            src="/assets/logo/logo2.png"
-            alt="swiftab"
-            width={1000}
-            height={800}
-            className=" md:h-24 md:w-auto transition-transform duration-300 hover:scale-105"
-          />
-        </div>
-      </Link>
-          <p className="text-sm text-gray-500 mb-6">Empowering hospitality growth, one table at a time.</p>
-          <div className="flex gap-4 text-gray-400">
-             <span className="hover:text-gray-900 cursor-pointer">Fb</span>
-             <span className="hover:text-gray-900 cursor-pointer">Ig</span>
-             <span className="hover:text-gray-900 cursor-pointer">X</span>
-             <span className="hover:text-gray-900 cursor-pointer">In</span>
+    <footer className="bg-ink text-white w-full h-full md:h-auto lg:h-auto flex flex-col pt-16 md:pt-24 pb-8 px-6 md:px-8 relative">
+      <div className="container-custom mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr] gap-8 md:gap-12 z-10 relative flex-1">
+        <div>
+          <a
+            href="#hero"
+            className="font-display text-2xl font-semibold tracking-wider text-white italic mb-4 block"
+          >
+            <Image
+              src={"/assets/logo/logo2.png"}
+              alt="swiftab_logo"
+              width={150}
+              height={100}
+              className=" object-cover items-center justify-center"
+            />
+          </a>
+          <p className="text-sm text-white/70 max-w-xs mb-6 leading-relaxed">
+            Real-time floor intelligence designed for restaurants that prioritize
+            the art of service.
+          </p>
+          <div className="flex gap-3">
+            {socialLinksData.map(({ name, src: componentSrc, url }) => (
+              <a
+                key={name}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-full bg-white flex items-center justify-center transition-colors hover:bg-teal cursor-pointer group"
+                aria-label={`Follow us on ${name}`}
+              >
+                <Image
+                  src={componentSrc}
+                  alt={`${name} icon`}
+                  width={16}
+                  height={16}
+                  className="w-4 h-4 
+                    filter brightness(0.7)  
+                    transition-all duration-300 
+                    group-hover:brightness(1) "
+                />
+              </a>
+            ))}
           </div>
         </div>
 
-        <div>
-          <h4 className="font-bold text-gray-900 mb-4">Product</h4>
-          <ul className="space-y-3 text-sm text-gray-500">
-            <li><a href="#" className="hover:text-primary-50">Dashboard</a></li>
-            <li><a href="#" className="hover:text-primary-50">Features</a></li>
-            <li><a href="#" className="hover:text-primary-50">Pricing</a></li>
-            <li><a href="#" className="hover:text-primary-50">Support</a></li>
+        <div className="flex flex-col">
+          <h4 className="font-semibold text-sm mb-4 text-white">Product</h4>
+          <ul className="flex flex-col gap-3">
+            <li>
+              <a
+                href="#features"
+                className="text-sm text-white/70 hover:text-white transition-colors"
+              >
+                Features
+              </a>
+            </li>
+            <li>
+            </li>
+            <li>
+              <a
+                href="https://play.google.com/store/apps/details?id=com.lifkha.swiftabapps"
+                className="text-sm text-white/70 hover:text-white transition-colors"
+              >
+                Mobile App
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                className="text-sm text-white/70 hover:text-white transition-colors"
+              >
+                Reviews
+              </a>
+            </li>
           </ul>
         </div>
 
-        <div>
-          <h4 className="font-bold text-gray-900 mb-4">Resources</h4>
-          <ul className="space-y-3 text-sm text-gray-500">
-            <li><a href="#" className="hover:text-primary-50">Documentation</a></li>
-            <li><a href="#" className="hover:text-primary-50">FAQs</a></li>
-            <li><a href="#" className="hover:text-primary-50">Tutorials</a></li>
-            <li><a href="#" className="hover:text-primary-50">Case Studies</a></li>
+        <div className="flex flex-col">
+          <h4 className="font-semibold text-sm mb-4 text-white">Resources</h4>
+          <ul className="flex flex-col gap-3">
+            <li>
+              {/* <a
+                href="#cta"
+                className="text-sm text-white/70 hover:text-white transition-colors"
+              >
+                Documentation
+              </a> */}
+            </li>
+            <li>
+              <a
+                href="/contact"
+                className="text-sm text-white/70 hover:text-white transition-colors"
+              >
+                FAQs
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                className="text-sm text-white/70 hover:text-white transition-colors"
+              >
+                Case studies
+              </a>
+            </li>
+            <li>
+              <a
+                href="/contact"
+                className="text-sm text-white/70 hover:text-white transition-colors"
+              >
+                Support
+              </a>
+            </li>
           </ul>
         </div>
 
-        <div>
-          <h4 className="font-bold text-gray-900 mb-4">Company</h4>
-          <ul className="space-y-3 text-sm text-gray-500">
-            <li><a href="#" className="hover:text-primary-50">About Us</a></li>
-            <li><a href="#" className="hover:text-primary-50">Careers</a></li>
-            <li><a href="#" className="hover:text-primary-50">Blog</a></li>
-            <li><a href="#" className="hover:text-primary-50">Contact Us</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="font-bold text-gray-900 mb-4">Community</h4>
-          <ul className="space-y-3 text-sm text-gray-500">
-            <li><a href="#" className="hover:text-primary-50">Forum</a></li>
-            <li><a href="#" className="hover:text-primary-50">Events</a></li>
+        <div className="flex flex-col">
+          <h4 className="font-semibold text-sm mb-4 text-white">Company</h4>
+          <ul className="flex flex-col gap-3">
+            <li>
+              <a
+                href="/about-us"
+                className="text-sm text-white/70 hover:text-white transition-colors"
+              >
+                About
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                className="text-sm text-white/70 hover:text-white transition-colors"
+              >
+                Careers
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                className="text-sm text-white/70 hover:text-white transition-colors"
+              >
+                Blog
+              </a>
+            </li>
+            <li>
+              <a
+                href="/contact"
+                className="text-sm text-white/70 hover:text-white transition-colors"
+              >
+                Contact
+              </a>
+            </li>
           </ul>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto mt-16 pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between text-xs text-gray-400 gap-4">
-        <p>© 2026 Swiftab. All rights reserved.</p>
-        <div className="flex gap-6">
-          <a href="#" className="hover:text-gray-900">Privacy Policy</a>
-          <a href="#" className="hover:text-gray-900">Terms of Service</a>
-          <a href="#" className="hover:text-gray-900">Cookies Settings</a>
+      <div className="w-full text-center z-10 relative pt-10">
+        <h2 className="text-[20vw] font-display font-bold leading-[0.75] tracking-tighter text-white/5 pointer-events-none select-none">
+          SWIFTAB
+        </h2>
+      </div>
+      <div className="container-custom pt-4 border-t border-white/10 flex flex-col items-center gap-4 z-10 relative mt-auto sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <p className="text-sm text-white/50 text-center sm:text-left">
+          {`© ${year} Swiftab. All rights reserved.`}
+        </p>
+        <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center sm:justify-end sm:flex-wrap-reverse">
+          <a
+            href="/privacy-policy"
+            className="text-sm text-white/50 hover:text-white transition-colors"
+          >
+            Privacy Policy
+          </a>
+          <a
+            href="/terms-of-service"
+            className="text-sm text-white/50 hover:text-white transition-colors"
+          >
+            Terms of Service
+          </a>
+          <a
+            href="#hero"
+            className="text-sm text-white/50 hover:text-white transition-colors"
+          >
+            Cookies
+          </a>
         </div>
       </div>
-    </div>
-  </footer>
-  )
+
+    </footer>
+  );
 }
-

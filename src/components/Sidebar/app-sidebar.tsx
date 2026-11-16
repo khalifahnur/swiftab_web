@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { Fragment, useState } from "react";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import { fetchLogout } from "@/hooks/authhook/authhooks";
-import { useAuth } from "../auth/AuthContext";
-import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/components/auth/AuthContext";
+import menuItems from "./Menu";
+import { cn } from "@/lib/utils";
 
 import {
   Sidebar,
@@ -16,242 +15,284 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
-  SidebarSeparator,
   SidebarGroup,
   SidebarGroupContent,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Calendar,
-  HelpCircle,
-  LayoutDashboard,
-  ListOrdered,
+  ChevronDown,
+  ChevronsUpDown,
   LogOut,
-  Settings,
-  Table2,
-  Utensils,
+  Hexagon,
+  HelpCircle,
   Loader2,
 } from "lucide-react";
-import Image from "next/image";
+import Link from "next/link";
 
-const sidebarItems = [
-  { name: "Home", href: "/dash", icon: "/assets/icon/home.png" },
-  {
-    name: "Reservations",
-    href: "/reservations",
-    icon: "/assets/icon/reserved.png",
-  },
-  { name: "Orders", href: "/order-line", icon: "/assets/icon/menu.png" },
-  {
-    name: "Manage Menu",
-    href: "/dishes",
-    icon: "/assets/icon/spoon-and-fork.png",
-  },
-  {
-    name: "Floor Plan",
-    href: "/tables/floorplan",
-    icon: "/assets/icon/tiles.png",
-  },
-];
+type MenuItem = (typeof menuItems)[number];
 
-const footerItems = [
-  { name: "Settings", href: "/settings", icon: "/assets/icon/setting.png" },
-  { name: "Need Help?", href: "#", icon: "/assets/icon/help.png" },
-];
+const SIDEBAR_BG = "#0f1115";
+const SURFACE_BG = "#181b21";
+
+function getInitials(name?: string | null) {
+  if (!name) return "U";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "U";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const pathname = usePathname();
   const router = useRouter();
+  const { user, isLoading, signOut } = useAuth();
+  const [openGroups, setOpenGroups] = useState<string[]>([]);
+  const [logoFailed, setLogoFailed] = useState(false);
 
-  const { user, isLoading } = useAuth();
-  const [logoutLoading, setLogoutLoading] = useState(false);
+  const toggleGroup = (title: string) => {
+    setOpenGroups((prev) =>
+      prev.includes(title)
+        ? prev.filter((group) => group !== title)
+        : [...prev, title],
+    );
+  };
 
-  const logoutMutation = useMutation<void, Error, void>({
-    mutationFn: fetchLogout,
-    onSuccess: () => {
-      toast({
-        title: "Logged out",
-        description: "You have securely logged out.",
-      });
-      router.replace("/signin");
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Logout failed",
-        description: error.message || "An error occurred.",
-        variant: "destructive",
-      });
-      setLogoutLoading(false);
-    },
-  });
+  const [signingOut, setSigningOut] = useState(false);
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    await signOut();
+  };
 
-  const handleLogout = async () => {
-    setLogoutLoading(true);
-    try {
-      await logoutMutation.mutateAsync();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+  const renderMenuItem = (item: MenuItem) => {
+    const isChildActive =
+      item.children?.some((child) => pathname === child.url) ?? false;
+    const isActive =
+      pathname === item.url ||
+      pathname.startsWith(`${item.url}/`) ||
+      isChildActive;
+    const isOpen = openGroups.includes(item.title) || isChildActive;
+
+    return (
+      <Fragment key={item.title}>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            tooltip={item.title}
+            isActive={isActive}
+            onClick={() => item.children && toggleGroup(item.title)}
+            className={cn(
+              "h-10 rounded-lg px-3 transition-all duration-200 gap-3",
+              // The base button paints its own active colours, so these win with data-active.
+              isActive
+                ? "bg-teal text-white shadow-md shadow-teal/20 hover:bg-teal hover:text-white data-active:bg-teal data-active:text-white"
+                : "text-slate-400 hover:bg-white/5 hover:text-white active:bg-white/10 active:text-white",
+            )}
+          >
+            <Link
+              href={item.children ? "#" : item.url}
+              className="flex gap-5 items-center w-full"
+            >
+              <item.icon className="h-5 w-5 shrink-0" />
+              <span
+                className={cn(
+                  "truncate",
+                  isActive ? "font-semibold" : "font-medium",
+                )}
+              >
+                {item.title}
+              </span>
+              {item.children && (
+                <ChevronDown
+                  className={cn(
+                    "ml-auto h-4 w-4 shrink-0 transition-transform duration-200",
+                    isOpen && "rotate-180",
+                  )}
+                />
+              )}
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </Fragment>
+    );
   };
 
   if (isLoading || !user) {
     return (
-      <Sidebar variant="sidebar" className="border-r border-gray-100 bg-white">
-        <SidebarHeader className="h-16 flex items-center justify-center border-b border-gray-50">
-          <Skeleton className="h-8 w-8 rounded-lg" />
-        </SidebarHeader>
-        <SidebarContent className="p-4 space-y-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="h-10 w-full rounded-md bg-gray-100" />
-          ))}
-        </SidebarContent>
+      <Sidebar collapsible="icon" variant="inset" className="p-0 border-none">
+        <div className="flex h-full flex-col bg-[#0f1115]">
+          <div className="space-y-3 p-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-xl bg-white/5" />
+            ))}
+          </div>
+        </div>
       </Sidebar>
     );
   }
 
-  const restaurantName = user?.restaurantName || "Swiftab";
+  const initials = getInitials(user?.name);
+  const primaryItems = menuItems.filter((item) => item.title !== "Settings");
+  const secondaryItems = menuItems.filter((item) => item.title === "Settings");
 
   return (
-    <Sidebar
-      variant="sidebar"
-      className="border-r border-gray-100 bg-white shadow-sm oswald"
-    >
-      <SidebarHeader className="p-0 relative h-29 overflow-hidden bg-gray-900 shrink-0">
-        {user?.image && (
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-60"
-            style={{ backgroundImage: `url(${user.image})` }}
-          />
-        )}
-        <div className="absolute inset-0 bg-linear-to-r from-gray-900/90 to-gray-900/40" />
-
-        <div className="relative z-10 flex h-full items-center px-4 justify-between transition-all">
-          <div className="flex items-center gap-3 overflow-hidden">
-            {/* <div className="h-8 w-8 shrink-0 rounded-lg bg-teal-500 flex items-center justify-center text-white font-bold italic shadow-sm">
-              {restaurantName.charAt(0).toUpperCase()}
-            </div> */}
-
-            {state === "expanded" && (
-              <span className="font-semibold text-sm text-white truncate w-32 tracking-wide">
-                {restaurantName}
-              </span>
+    <Sidebar collapsible="icon" variant="inset" className="p-0 border-none">
+      <div className="flex h-full flex-col bg-[#0f1115]">
+        <SidebarHeader className="px-5 py-3">
+          <div className="flex items-center gap-3 pl-1">
+            {!logoFailed ? (
+              <Image
+                src="/assets/logo/logo2.png"
+                alt="Swiftab"
+                width={100}
+                height={66}
+                priority
+                onError={() => setLogoFailed(true)}
+                className="shrink-0 rounded-lg object-contain items-center ml-10"
+              />
+            ) : (
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#0f766e] text-white shadow-lg shadow-[#0f766e]/20">
+                <Hexagon className="h-5 w-5 fill-current" />
+              </div>
             )}
           </div>
-        </div>
-      </SidebarHeader>
+        </SidebarHeader>
 
-      <SidebarContent className="pt-4 pb-4 bg-white">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-1.5 px-2">
-              {sidebarItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <SidebarMenuItem key={item.name}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      tooltip={item.name}
-                      className={`h-10 transition-colors ${
-                        isActive
-                          ? "bg-teal-50 text-teal-700 hover:bg-teal-50 hover:text-teal-800 font-medium"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                      }`}
-                    >
-                      <Link
-                        href={item.href}
-                        className="flex items-center gap-3"
-                      >
-                        {/* <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-teal-600" : "text-gray-400"}`} /> */}
-                        <div
-                          className={`relative h-5 w-5 shrink-0 transition-all duration-200 ${
-                            isActive
-                              ? "opacity-100"
-                              : "opacity-50 grayscale hover:grayscale-0"
-                          }`}
-                        >
-                          <Image
-                            src={item.icon}
-                            alt={`${item.name} icon`}
-                            fill
-                            className="object-contain"
-                            sizes="20px"
-                          />
-                        </div>
-                        <span className="truncate">{item.name}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+        <SidebarContent className="flex flex-col px-3 py-2">
+          <SidebarGroup>
+            <SidebarGroupContent>
+              {state === "expanded" && (
+                <p className="px-4 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  Main Menu
+                </p>
+              )}
+              <SidebarMenu className="gap-1.5">
+                {primaryItems.map(renderMenuItem)}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-      <SidebarFooter className="border-t border-gray-50 bg-gray-50/50 p-2">
-        <SidebarMenu className="gap-1">
-          {footerItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <SidebarMenuItem key={item.name}>
-                <SidebarMenuButton
-                  asChild
-                  tooltip={item.name}
-                  isActive={isActive}
-                  className="h-10 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
-                >
-                  <Link href={item.href} className="flex items-center gap-3">
-                    <div
-                      className={`relative h-4 w-4 shrink-0 transition-all duration-200 ${
-                        isActive
-                          ? "opacity-100"
-                          : "opacity-50 grayscale hover:grayscale-0"
-                      }`}
-                    >
-                      <Image
-                        src={item.icon}
-                        alt={`${item.name} icon`}
-                        fill
-                        className="object-contain"
-                        sizes="20px"
-                      />
-                    </div>
-                    <span className="text-sm">{item.name}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
-
-          <SidebarSeparator className="my-1 mx-2" />
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              tooltip="Logout"
-              className="h-10 text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors"
-            >
-              <button
-                onClick={handleLogout}
-                disabled={logoutLoading}
-                className="flex items-center gap-3 w-full"
-              >
-                {logoutLoading ? (
-                  <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-                ) : (
-                  <LogOut className="h-4 w-4 shrink-0 text-rose-500" />
+          {secondaryItems.length > 0 && (
+            <SidebarGroup className="mt-4">
+              <SidebarGroupContent>
+                {state === "expanded" && (
+                  <p className="px-4 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                    System
+                  </p>
                 )}
-                <span>{logoutLoading ? "Logging out..." : "Logout"}</span>
-              </button>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+                <SidebarMenu className="gap-1.5">
+                  {secondaryItems.map(renderMenuItem)}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
+        </SidebarContent>
 
-      <SidebarRail />
+        <SidebarFooter className="p-4">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-xl border border-white/5 bg-white/5 p-2 text-slate-300 outline-none transition-all duration-200 hover:bg-white/10 hover:text-white data-[state=open]:bg-white/10",
+                    state === "collapsed" && "justify-center"
+                  )}
+                >
+                  <Avatar className="h-10 w-10 shrink-0 rounded-lg border border-white/10">
+                    <AvatarFallback className="rounded-lg bg-[#0f766e] text-xs font-bold text-white">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  {state === "expanded" && (
+                    <>
+                      <div className="grid flex-1 text-left leading-tight overflow-hidden">
+                        <span className="truncate text-sm font-bold text-white">
+                          {user?.name ?? "Account"}
+                        </span>
+                        <span className="truncate text-xs font-medium text-slate-400">
+                          {user?.email ?? "—"}
+                        </span>
+                      </div>
+                      <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 text-slate-500" />
+                    </>
+                  )}
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent
+                  side="top"
+                  align="start"
+                  sideOffset={8}
+                  className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-64 rounded-xl border border-white/10 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-xl"
+                  style={{ backgroundColor: `${SURFACE_BG}fa` }}
+                >
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="px-2 py-2.5 font-normal">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10 rounded-lg border border-white/10">
+                          <AvatarFallback className="rounded-lg text-sm font-bold text-white bg-[#0f766e]">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="grid leading-tight">
+                          <span className="truncate text-sm font-bold text-white">
+                            {user?.name ?? "Account"}
+                          </span>
+                          <span className="truncate text-xs font-medium text-slate-400 mt-0.5">
+                            {user?.email ?? "—"}
+                          </span>
+                        </div>
+                      </div>
+                    </DropdownMenuLabel>
+                  </DropdownMenuGroup>
+
+                  <DropdownMenuSeparator className="my-1 bg-white/10" />
+                  
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      onClick={() => router.push("/contact")}
+                      className="w-full cursor-pointer rounded-lg py-2.5 px-3 text-slate-300 focus:bg-white/10 focus:text-white font-medium flex items-center gap-2"
+                    >
+                      <HelpCircle className="h-4 w-4" />
+                      <span>Help &amp; contact</span>
+                    </DropdownMenuItem>
+                    
+                  </DropdownMenuGroup>
+
+                  <DropdownMenuSeparator className="my-1 bg-white/10" />
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      onClick={handleSignOut}
+                      disabled={signingOut}
+                      className="cursor-pointer rounded-lg py-2.5 px-3 text-red-400 focus:bg-red-500/10 focus:text-red-400 font-medium flex items-center gap-2"
+                    >
+                      {signingOut ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <LogOut className="h-4 w-4" />
+                      )}
+                      <span>
+                        {signingOut
+                          ? "Logging out…"
+                          : "Log out"}
+                      </span>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </div>
     </Sidebar>
   );
 }

@@ -1,88 +1,55 @@
 "use client";
 
 import { AuthProvider } from "@/components/auth/AuthContext";
-// import AuthPage from "@/components/auth/Oauth";
 import { SignInForm } from "@/components/auth/SignInForm";
 import Image from "next/image";
+import Navbar from "@/components/landing/Navbar";
+import Footer from "@/components/landing/Footer";
 
 export default function Page() {
   return (
     <AuthProvider>
-      <div className="min-h-screen flex bg-gray-50 oswald">
-        <div className="hidden lg:flex lg:w-1/2 relative bg-gray-900 overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-50 transition-opacity duration-1000"
-            style={{ backgroundImage: "url('/swiftab/bg.jpg')" }}
-          />
-          <div className="absolute inset-0 bg-linear-to-br from-teal-900/90 to-gray-900/90" />
-
-          <div className="relative z-10 flex flex-col justify-between w-full p-12 xl:p-20">
-            <div>
-              <div className="flex items-center gap-2 mb-12">
+      <Navbar />
+      <main className="pt-20 bg-[#F8F9FA]">
+        <div className="min-h-screen flex items-center justify-center p-4 sm:p-8 md:py-16 displayfont">
+          <div className="w-full max-w-[1150px] bg-white rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] border border-slate-200">
+            <div className="relative w-full md:w-[45%] h-64 md:h-auto min-h-[400px] flex flex-col justify-between p-8 md:p-10">
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: "url('https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&q=80&w=1200')" }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/60 to-slate-900/20" />
+              <div className="absolute inset-0 bg-teal-900/20 mix-blend-overlay" />
+              
+              <div className="relative z-10 flex items-start justify-between w-full">
                 <Image
                   src="/assets/logo/logo2.png"
-                  alt="swiftab"
-                  width={1000}
-                  height={800}
-                  className=" md:h-24 md:w-auto transition-transform duration-300 hover:scale-105"
+                  alt="Swiftab"
+                  width={120}
+                  height={40}
+                  className="h-8 w-auto object-contain brightness-0 invert" 
                 />
               </div>
-              <h1 className="text-4xl xl:text-5xl font-extrabold text-white leading-[1.15] mb-6 max-w-lg">
-                Streamline Service, <br /> Maximize Covers.
-              </h1>
-              <p className="text-lg text-teal-100 max-w-md leading-relaxed">
-                Join thousands of top-tier restaurants using our system to
-                manage reservations, optimize floor plans, and empower staff.
-              </p>
+              
+              <div className="relative z-10">
+                <h1 className="text-3xl md:text-4xl font-semibold text-white leading-[1.15] mb-6 max-w-sm tracking-tight">
+                  Streamline Service,<br />Maximize Covers.
+                </h1>
+                <div className="flex gap-2.5 items-center">
+                  <div className="w-2 h-1 bg-white/30 rounded-full" />
+                  <div className="w-8 h-1 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
+                  <div className="w-2 h-1 bg-white/30 rounded-full" />
+                </div>
+              </div>
             </div>
-            {/* <div className="backdrop-blur-md bg-white/10 border border-white/20 p-8 rounded-2xl max-w-lg shadow-2xl">
-              <div className={`min-h-[100px] transition-opacity duration-300 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-                <h3 className="text-xl font-bold text-white mb-3">
-                  {benefits[currentBenefit].title}
-                </h3>
-                <p className="text-teal-50 text-base leading-relaxed">
-                  {benefits[currentBenefit].description}
-                </p>
-              </div>
 
-              <div className="flex gap-2 mt-8 items-center">
-                {benefits.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setIsTransitioning(true);
-                      setTimeout(() => {
-                        setCurrentBenefit(index);
-                        setIsTransitioning(false);
-                      }, 300);
-                    }}
-                    className={`h-1.5 rounded-full transition-all duration-300 ease-in-out ${
-                      currentBenefit === index 
-                        ? "w-8 bg-teal-400" 
-                        : "w-4 bg-white/30 hover:bg-white/50"
-                    }`}
-                    aria-label={`Go to benefit ${index + 1}`}
-                  />
-                ))}
-              </div>
-            </div> */}
+            <div className="w-full md:w-[55%] p-8 md:p-14 lg:p-16 flex items-center justify-center bg-white relative">
+              <SignInForm />
+            </div>
           </div>
         </div>
-
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-16">
-          <div className="w-full max-w-md flex flex-col justify-center">
-            <div className="flex lg:hidden items-center justify-center gap-2 mb-10">
-              <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center text-white font-bold italic">
-                S
-              </div>
-              <span className="text-2xl font-bold text-gray-900 tracking-tight">
-                Swiftab
-              </span>
-            </div>
-            <SignInForm />
-          </div>
-        </div>
-      </div>
+      </main>
+      <Footer />
     </AuthProvider>
   );
 }

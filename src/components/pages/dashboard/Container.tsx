@@ -1,389 +1,233 @@
 "use client";
 
-import * as React from "react";
-import {
-  Bar,
-  BarChart,
-  Area,
-  AreaChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from "recharts";
-import { 
-  Calendar, 
-  CreditCard, 
-  MapPin, 
-  Users, 
-  Utensils, 
-  ArrowUpRight, 
-  Clock,
-  ChevronRight
-} from "lucide-react";
+import { useState } from "react";
+import Link from "next/link";
+import { ArrowRight, Banknote, CalendarCheck, CreditCard, ReceiptText, RefreshCw, Utensils } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthContext";
+import { useDashboardStats, useOrders } from "@/hooks/queries";
+import { ORDER_STATUS, formatKes, formatTime, paymentMeta } from "@/lib/format";
+import { isOpenNow } from "@/lib/restaurant";
+import { cn } from "@/lib/utils";
+import type { DashboardPeriod } from "@/types/api";
+import { OccupancyPanel, Panel, PaymentsPanel, PeakHoursPanel, StaffPanel, SummaryPanel, TopItemsPanel, UpcomingPanel } from "./Panels";
+import { StatTile } from "./StatTile";
+import { TrendCard } from "./TrendCard";
 
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import useSocketData from "@/hooks/socket/useSocketData";
-import { useQuery } from "@tanstack/react-query";
-import { fetchOrders } from "@/hooks/orderhook/fetchorder";
-import { Skeleton } from "@/components/ui/skeleton";
-
-const monthlyOrders = [
-  { month: "Jan", orders: 45 }, { month: "Feb", orders: 52 },
-  { month: "Mar", orders: 38 }, { month: "Apr", orders: 65 },
-  { month: "May", orders: 48 }, { month: "Jun", orders: 91 },
-  { month: "Jul", orders: 52 }, { month: "Aug", orders: 62 },
-  { month: "Sep", orders: 55 }, { month: "Oct", orders: 70 },
-  { month: "Nov", orders: 45 }, { month: "Dec", orders: 58 },
-];
-
-const miniChartData = [
-  { value: 45 }, { value: 52 }, { value: 38 }, { value: 65 }, 
-  { value: 48 }, { value: 91 }, { value: 72 }
-];
-
-export interface MenuItem {
-  _id: string;
-  image: string;
-  name: string;
-  description: string;
-  cost: number;
-  quantity: number;
+function greeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
 }
 
-export interface Order {
-  _id: string;
-  userId: string;
-  orderId: string;
-  restaurantId: string;
-  reservationId: string;
-  tableNumber: string;
-  items: MenuItem[];
-  status: "Served" | "Not-served";
-  paid: "Paid" | "Unpaid";
-  takenBy?: string;
-  createdAt: string;
-}
+export default function DashboardContainer() {
+  const { user } = useAuth();
+  const [period, setPeriod] = useState<DashboardPeriod>("weekly");
+  const { data: stats, isPending, isError, isFetching, refetch } = useDashboardStats(period);
+  const { data: orders, isPending: ordersPending } = useOrders();
 
-export default function Dashboard() {
-  const realtimeData = useSocketData("realTimeData");
-
-  const { data, error, isPending } = useQuery<{ orders: Order[] }>({
-    queryKey: ["orders"],
-    queryFn: fetchOrders,
-  });
-
-  const recentOrders = React.useMemo(() => {
-    return data?.orders
-      ?.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 4) || []; 
-  }, [data]);
-
-  const activeTables = realtimeData?.tableStatus?.activeTables ?? 0;
-  const totalTables = realtimeData?.tableStatus?.totalTables ?? 0;
-  const occupancyRate = totalTables ? (activeTables / totalTables) * 100 : 0;
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(amount);
-  };
+  const live = stats?.live;
+  const kpi = stats?.kpiTrends;
+  const open = isOpenNow(user?.openingHours);
+  const recent = (orders ?? []).slice(0, 6);
+  const spark = (points?: { value: number }[]) => points?.map((p) => p.value);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50/50 p-4 md:p-8 oswald">
-      <div className="max-w-7xl mx-auto w-full space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Reservations</p>
-                <h3 className="text-3xl font-bold text-gray-900">{realtimeData?.reservations ?? 0}</h3>
-              </div>
-              <div className="p-2 bg-indigo-50 rounded-xl">
-                <Calendar className="h-5 w-5 text-indigo-500" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-auto">
-              <span className="flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
-                <ArrowUpRight className="h-3 w-3 mr-0.5" /> 12%
+    <div className="mx-auto w-full max-w-[1500px] space-y-5 p-4 md:p-6 lg:p-8">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+            {greeting()}, {user?.name?.split(" ")[0] ?? "there"}
+          </h1>
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-500">
+            {new Date().toLocaleDateString("en-KE", { weekday: "long", day: "numeric", month: "long" })}
+            {open !== null && (
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold",
+                  open ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-600",
+                )}
+              >
+                <span className={cn("h-1.5 w-1.5 rounded-full", open ? "bg-emerald-500" : "bg-gray-400")} />
+                {open ? "Open now" : "Closed now"}
               </span>
-              <div className="h-8 w-20">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={miniChartData}>
-                    <defs>
-                      <linearGradient id="colorIndigo" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorIndigo)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Seated Tables</p>
-                <h3 className="text-3xl font-bold text-gray-900">{activeTables}<span className="text-lg text-gray-400 font-medium">/{totalTables}</span></h3>
-              </div>
-              <div className="p-2 bg-rose-50 rounded-xl">
-                <Utensils className="h-5 w-5 text-rose-500" />
-              </div>
-            </div>
-            <div className="mt-auto">
-              <div className="flex justify-between text-xs font-medium text-gray-500 mb-1.5">
-                <span>Occupancy</span>
-                <span>{occupancyRate.toFixed(0)}%</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-rose-500 rounded-full transition-all duration-500 ease-in-out" style={{ width: `${occupancyRate}%` }} />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Active Guests</p>
-                <h3 className="text-3xl font-bold text-gray-900">{realtimeData?.totalCustomers ?? 0}</h3>
-              </div>
-              <div className="p-2 bg-emerald-50 rounded-xl">
-                <Users className="h-5 w-5 text-emerald-500" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-auto">
-              <span className="flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
-                <ArrowUpRight className="h-3 w-3 mr-0.5" /> 8%
-              </span>
-              <div className="h-8 w-20">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={miniChartData}>
-                    <defs>
-                      <linearGradient id="colorEmerald" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorEmerald)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Revenue (MTD)</p>
-                <h3 className="text-2xl font-bold text-gray-900 truncate max-w-120px">
-                  {formatCurrency(realtimeData?.revenue ?? 0)}
-                </h3>
-              </div>
-              <div className="p-2 bg-violet-50 rounded-xl shrink-0">
-                <CreditCard className="h-5 w-5 text-violet-500" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-auto">
-              <span className="flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
-                <ArrowUpRight className="h-3 w-3 mr-0.5" /> 15%
-              </span>
-              <div className="h-8 w-20">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={miniChartData}>
-                    <defs>
-                      <linearGradient id="colorViolet" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <Area type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorViolet)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] lg:col-span-2">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Booking Overview</h3>
-                <p className="text-sm text-gray-500">Monthly reservation trends</p>
-              </div>
-              <div className="flex bg-gray-100/80 p-1 rounded-lg">
-                <Button variant="ghost" size="sm" className="text-xs h-7 px-3 rounded-md text-gray-500 hover:text-gray-900">Weekly</Button>
-                <Button size="sm" className="text-xs h-7 px-3 rounded-md bg-white text-gray-900 shadow-sm">Monthly</Button>
-                <Button variant="ghost" size="sm" className="text-xs h-7 px-3 rounded-md text-gray-500 hover:text-gray-900">Yearly</Button>
-              </div>
-            </div>
-
-            <div className="h-[280px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyOrders} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis 
-                    dataKey="month" 
-                    stroke="#94a3b8" 
-                    fontSize={12} 
-                    tickLine={false} 
-                    axisLine={false} 
-                    dy={10}
-                  />
-                  <YAxis 
-                    stroke="#94a3b8" 
-                    fontSize={12} 
-                    tickLine={false} 
-                    axisLine={false} 
-                  />
-                  <Tooltip
-                    cursor={{ fill: '#f8fafc' }}
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', fontWeight: 500 }}
-                  />
-                  <Bar 
-                    dataKey="orders" 
-                    name="Reservations" 
-                    fill="#6366f1" 
-                    radius={[6, 6, 6, 6]} 
-                    barSize={28}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] lg:col-span-1 flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Areas</h3>
-                <p className="text-sm text-gray-500">Live floor utilization</p>
-              </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full">
-                <MapPin className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="space-y-5 flex-1">
-              {/* Dining Item */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-semibold text-gray-700">Main Dining</span>
-                  <span className="text-sm font-bold text-gray-900">80%</span>
-                </div>
-                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-500 rounded-full" style={{ width: "80%" }} />
-                </div>
-                <p className="text-xs text-gray-500 mt-1.5 font-medium">8 of 10 tables occupied</p>
-              </div>
-
-              {/* Patio Item */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-semibold text-gray-700">Patio / Terrace</span>
-                  <span className="text-sm font-bold text-gray-900">50%</span>
-                </div>
-                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: "50%" }} />
-                </div>
-                <p className="text-xs text-gray-500 mt-1.5 font-medium">3 of 6 tables occupied</p>
-              </div>
-
-              {/* Bar Item */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-semibold text-gray-700">Bar Area</span>
-                  <span className="text-sm font-bold text-gray-900">25%</span>
-                </div>
-                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-500 rounded-full" style={{ width: "25%" }} />
-                </div>
-                <p className="text-xs text-gray-500 mt-1.5 font-medium">2 of 8 seats occupied</p>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-gray-100 bg-gray-50/50 -mx-6 -mb-6 px-6 pb-6 rounded-b-2xl flex justify-between items-center">
-              <span className="text-sm font-semibold text-gray-700">Overall</span>
-              <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">64%</span>
-            </div>
-          </div>
-        </div>
-
-        {/* --- Bottom Row: Recent Orders --- */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] overflow-hidden">
-          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                Recent Orders
-                {isPending && <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />}
-              </h3>
-              <p className="text-sm text-gray-500">Latest tickets from the floor</p>
-            </div>
-            <Button variant="ghost" className="text-sm text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
-              View All <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-
-          <div className="p-0">
-            {error && <div className="p-6 text-sm text-red-500">Failed to load recent orders.</div>}
-            {isPending && (
-              <div className="p-6 space-y-4">
-                {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full bg-gray-100 rounded-lg" />)}
-              </div>
             )}
-            
-            {!isPending && !error && recentOrders.length === 0 ? (
-              <div className="p-12 text-center text-gray-500">No active orders right now.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-gray-50/50">
-                    <TableRow className="hover:bg-transparent border-b-gray-100">
-                      <TableHead className="font-semibold text-gray-600 pl-6 w-[120px]">Order ID</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Time</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Table</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Items</TableHead>
-                      <TableHead className="font-semibold text-gray-600 text-right pr-6">Amount</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {recentOrders.map((order) => (
-                      <TableRow key={order._id} className="hover:bg-gray-50/80 transition-colors border-b-gray-50 last:border-0">
-                        <TableCell className="pl-6 font-medium text-gray-900">{order.orderId}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center text-sm text-gray-500">
-                            <Clock className="w-3.5 h-3.5 mr-1.5" />
-                            {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                           <Badge variant="outline" className="bg-white text-gray-700 font-semibold border-gray-200 shadow-sm">
-                             Table {order.tableNumber}
-                           </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600 truncate max-w-[200px]">
-                          {order.items.map((item) => `${item.quantity}x ${item.name}`).join(", ")}
-                        </TableCell>
-                        <TableCell className="text-right pr-6 font-bold text-gray-900">
-                          {formatCurrency(order.items.reduce((sum, item) => sum + item.cost * item.quantity, 0))}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+            {user?.acceptingReservations === false && (
+              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800">Reservations paused</span>
             )}
-          </div>
+          </p>
         </div>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="inline-flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-semibold text-gray-700 transition hover:bg-gray-50"
+        >
+          <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
+          Refresh
+        </button>
+      </header>
 
+      {isError && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          <span>We couldn't load your figures. The numbers below may be out of date.</span>
+          <button type="button" onClick={() => refetch()} className="font-semibold underline underline-offset-4">
+            Try again
+          </button>
+        </div>
+      )}
+
+      {/* The one thing that most needs action: guests waiting to pay. */}
+      {live && live.awaitingPayment > 0 && (
+        <Link
+          href="/orders?tab=payment"
+          className="group flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 transition hover:bg-violet-100/70"
+        >
+          <span className="flex items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-violet-600 shadow-sm">
+              <CreditCard className="h-4 w-4" />
+            </span>
+            <span>
+              <span className="block text-sm font-semibold text-gray-900">
+                {live.awaitingPayment} table{live.awaitingPayment === 1 ? " is" : "s are"} waiting to pay
+              </span>
+              <span className="block text-xs text-gray-600">{formatKes(live.unpaidAmount)} on open bills across the floor</span>
+            </span>
+          </span>
+          <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-violet-700">
+            Go to orders <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+          </span>
+        </Link>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatTile
+          label="Revenue today"
+          icon={Banknote}
+          loading={isPending}
+          value={formatKes(kpi?.revenue.today)}
+          change={kpi?.revenue.changePercent}
+          trend={spark(kpi?.revenue.sparkline)}
+        />
+        <StatTile
+          label="Orders today"
+          icon={ReceiptText}
+          loading={isPending}
+          value={kpi?.orders.today ?? 0}
+          change={kpi?.orders.changePercent}
+          trend={spark(kpi?.orders.sparkline)}
+        />
+        <StatTile
+          label="Tables seated"
+          icon={Utensils}
+          loading={isPending}
+          value={
+            <>
+              {live?.seatedTables ?? 0}
+              <span className="text-lg font-medium text-gray-400"> / {live?.totalTables ?? 0}</span>
+            </>
+          }
+          footer={
+            <div className="w-full">
+              <div
+                role="meter"
+                aria-label="Floor occupancy"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={live?.occupancyRate ?? 0}
+                className="h-1.5 w-full overflow-hidden rounded-full bg-teal/15"
+              >
+                <div className="h-full rounded-full bg-teal transition-[width] duration-500" style={{ width: `${live?.occupancyRate ?? 0}%` }} />
+              </div>
+              <p className="mt-1.5 text-xs text-gray-500">
+                {live?.occupancyRate ?? 0}% occupied · {live?.activeGuests ?? 0} guests in the house
+              </p>
+            </div>
+          }
+        />
+        <StatTile
+          label="Reservations today"
+          icon={CalendarCheck}
+          loading={isPending}
+          value={live?.reservationsToday ?? 0}
+          change={kpi?.reservations.changePercent}
+          trend={spark(kpi?.reservations.sparkline)}
+        />
       </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <TrendCard trend={stats?.trend} period={period} onPeriodChange={setPeriod} loading={isPending} />
+        <SummaryPanel stats={stats} loading={isPending} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <OccupancyPanel areas={stats?.areaOccupancy} loading={isPending} />
+        <PeakHoursPanel hours={stats?.peakHours} loading={isPending} />
+        <PaymentsPanel methods={stats?.paymentMethods} loading={isPending} />
+        <TopItemsPanel items={stats?.topItems} loading={isPending} />
+        <UpcomingPanel reservations={stats?.upcomingReservations} loading={isPending} />
+        <StaffPanel staff={stats?.staff} loading={isPending} />
+      </div>
+
+      <Panel
+        title="Latest orders"
+        subtitle="Newest first"
+        action={
+          <Link href="/orders" className="shrink-0 text-xs font-semibold text-teal hover:underline">
+            All orders
+          </Link>
+        }
+      >
+        {ordersPending ? (
+          <div className="space-y-3">
+            {Array.from({ length: 4 }, (_, i) => (
+              <div key={i} className="h-10 animate-pulse rounded-lg bg-gray-100" />
+            ))}
+          </div>
+        ) : recent.length === 0 ? (
+          <p className="py-10 text-center text-sm text-gray-500">No orders yet. They appear here the moment a guest orders from the app.</p>
+        ) : (
+          <div className="-mx-5 overflow-x-auto">
+            <table className="w-full min-w-[640px] text-left text-sm">
+              <thead>
+                <tr className="border-y border-gray-100 bg-gray-50/60 text-xs font-medium text-gray-500">
+                  <th className="px-5 py-2.5 font-medium">Table</th>
+                  <th className="px-3 py-2.5 font-medium">Time</th>
+                  <th className="px-3 py-2.5 font-medium">Items</th>
+                  <th className="px-3 py-2.5 font-medium">Status</th>
+                  <th className="px-3 py-2.5 font-medium">Payment</th>
+                  <th className="px-5 py-2.5 text-right font-medium">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {recent.map((order) => {
+                  const status = ORDER_STATUS[order.orderStatus] ?? ORDER_STATUS.placed;
+                  const payment = paymentMeta(order.paymentMethod);
+                  return (
+                    <tr key={order._id}>
+                      <td className="px-5 py-3 font-semibold text-gray-900">{order.tableNumber}</td>
+                      <td className="px-3 py-3 tabular-nums text-gray-600">{formatTime(order.createdAt)}</td>
+                      <td className="max-w-[280px] truncate px-3 py-3 text-gray-600">
+                        {order.items.map((item) => `${item.quantity}× ${item.name}`).join(", ")}
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset", status.badge)}>
+                          {status.label}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset", payment.badge)}>
+                          {payment.label}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-right font-semibold tabular-nums text-gray-900">{formatKes(order.totalAmount)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Panel>
     </div>
   );
 }

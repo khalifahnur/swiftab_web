@@ -1,76 +1,39 @@
-import { useMutation, UseMutationResult } from "@tanstack/react-query";
-import {
-  AuthData,
-  AuthResponse,
-  Authwaiter,
-  AuthWaiterResponse,
-  ErrorResponse,
-} from "@/types/auth";
-import { loginAdmin, signUpAdmin, signUpWaiter } from "@/lib/api";
-import apiClient from "@/lib/axios";
+import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { loginAdmin, signUpAdmin } from "@/lib/api";
+import { errorMessage } from "@/lib/axios";
 import { useAuth } from "@/components/auth/AuthContext";
+import type { AuthData } from "@/types/auth";
 
-export function useLogin(): UseMutationResult<
-  AuthResponse,
-  ErrorResponse,
-  AuthData
-> {
+/**
+ * Signs in and loads the account before resolving, so the caller can
+ * navigate straight to the dashboard.
+ */
+export function useLogin() {
   const { refreshUser } = useAuth();
 
-  return useMutation<AuthResponse, ErrorResponse, AuthData>({
-    mutationFn: loginAdmin,
-    onSuccess: async () => {
-      setTimeout(() => {
-        refreshUser();
-      }, 1000);
-    },
-    onError: (error: ErrorResponse) => {
-      console.error(
-        `Login error (${error.statusCode || "Unknown"}): ${error.message}`,
-      );
-      if (error.details) {
-        console.error("Additional error details:", error.details);
+  return useMutation({
+    mutationFn: async (data: AuthData) => {
+      await loginAdmin(data);
+      const user = await refreshUser();
+      if (!user) {
+        // The sign-in succeeded but the session cookie did not come back,
+        // which happens when the browser blocks it.
+        throw new Error("Signed in, but your browser did not keep the session. Allow cookies for this site and try again.");
       }
+      return user;
+    },
+    onError: (error) => {
+      toast.error(errorMessage(error, "Could not sign in. Please try again."));
     },
   });
 }
 
-export function useSignUp(): UseMutationResult<
-  AuthResponse,
-  ErrorResponse,
-  AuthData
-> {
-  return useMutation<AuthResponse, ErrorResponse, AuthData>({
+export function useSignUp() {
+  return useMutation({
     mutationFn: signUpAdmin,
-    onSuccess: () => {
-      console.log("Sign-up successful:");
-    },
-    onError: (error: ErrorResponse) => {
-      console.error("Sign-up error:", error.message);
-    },
-  });
-}
-
-export const fetchLogout = async (): Promise<void> => {
-  const response = await apiClient.post("/auth/admin/logout");
-
-  if (!response || response.status !== 200) {
-    throw new Error("Logout failed");
-  }
-};
-
-export function useWaiterSignUp(): UseMutationResult<
-  AuthWaiterResponse,
-  ErrorResponse,
-  Authwaiter
-> {
-  return useMutation<AuthWaiterResponse, ErrorResponse, Authwaiter>({
-    mutationFn: signUpWaiter,
-    onSuccess: () => {
-      console.log("Sign-up waiter successful:");
-    },
-    onError: (error: ErrorResponse) => {
-      console.error("Sign-up waiter error:", error.message);
+    onError: (error) => {
+      toast.error(errorMessage(error, "Could not create your account. Please try again."));
     },
   });
 }
