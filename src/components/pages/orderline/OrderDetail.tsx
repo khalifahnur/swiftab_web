@@ -130,6 +130,9 @@ export function OrderDetail({ order, onClose, restaurantName, taxRate = 0 }: Pro
                   <tr key={`${item._id}-${index}`} className="align-top">
                     <td className="py-2.5 pr-3">
                       <span className="font-medium text-gray-900">{item.name}</span>
+                      {item.addedBy && (
+                        <span className="ml-1.5 inline-flex rounded-full bg-teal/10 px-1.5 text-[11px] font-semibold leading-[18px] text-teal-deep">for {item.addedBy}</span>
+                      )}
                       {item.note && <span className="mt-0.5 block text-xs text-amber-700">Note: {item.note}</span>}
                     </td>
                     <td className="py-2.5 text-center tabular-nums text-gray-600">{item.quantity}</td>

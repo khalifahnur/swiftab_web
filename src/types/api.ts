@@ -154,6 +154,8 @@ export interface OrderItem {
   quantity: number;
   description?: string;
   note?: string;
+  /** The friend who ordered it on a host's shared tab. */
+  addedBy?: string;
 }
 
 export interface Order {
