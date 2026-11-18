@@ -17,6 +17,7 @@ export const keys = {
   reservations: ["reservations"] as QueryKey,
   waiters: ["waiters"] as QueryKey,
   promotions: ["promotions"] as QueryKey,
+  tableCodes: ["table-codes"] as QueryKey,
 };
 
 /**
@@ -42,6 +43,10 @@ export function useMenu() {
 
 export function useLayout() {
   return useQuery({ queryKey: keys.layout, queryFn: api.fetchLayout, refetchOnWindowFocus: false });
+}
+
+export function useTableCodes(enabled = true) {
+  return useQuery({ queryKey: keys.tableCodes, queryFn: api.fetchTableCodes, enabled, staleTime: 5 * 60_000 });
 }
 
 export function useLiveFloor(enabled = true) {
@@ -156,7 +161,7 @@ export const useSaveLayout = () =>
   useWrite(api.saveLayout, {
     // The editor keeps its own copy of the plan, so only the views derived
     // from it need refreshing.
-    invalidate: [keys.liveFloor, keys.dashboard],
+    invalidate: [keys.liveFloor, keys.dashboard, keys.tableCodes],
     success: "Floor plan saved",
     failure: "Could not save the floor plan.",
   });

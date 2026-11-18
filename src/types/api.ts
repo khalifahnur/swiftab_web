@@ -322,3 +322,23 @@ export interface LiveEvent {
   table?: string;
   status?: string;
 }
+
+// --- Table QR codes ------------------------------------------------------------
+
+export interface TableCode {
+  id: string;
+  name: string;
+  floorId: string;
+  floorName: string;
+  seats: number;
+  /** Signed by the server; the guest page sends it back to prove the scan. */
+  code: string;
+}
+
+export interface TableCodes {
+  restaurantId: string;
+  restaurantName: string;
+  logo?: string;
+  image?: string;
+  tables: TableCode[];
+}

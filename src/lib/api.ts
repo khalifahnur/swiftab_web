@@ -15,6 +15,7 @@ import type {
   PromotionInput,
   Reservation,
   ReservationStatus,
+  TableCodes,
   RestaurantInput,
   Waiter,
   WaiterInput,
@@ -165,6 +166,12 @@ export async function fetchLayout(): Promise<Layout> {
 export async function saveLayout(layout: Layout): Promise<Layout> {
   const { data } = await apiClient.post<{ floors: Floor[]; tables: FloorTable[] }>("/admin/layout/tables", layout);
   return { floors: data.floors ?? [], tables: data.tables ?? [] };
+}
+
+/** Every table with the signed code its QR link carries. */
+export async function fetchTableCodes(): Promise<TableCodes> {
+  const { data } = await apiClient.get<TableCodes>("/admin/tables/qr");
+  return { ...data, tables: data.tables ?? [] };
 }
 
 export async function fetchLiveFloor(): Promise<LiveFloor> {
