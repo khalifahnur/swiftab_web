@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import toast from "react-hot-toast";
-import { Check, Copy, Loader2, Minus, Pencil, Plus, Redo2, RotateCcw, RotateCw, Save, Trash2, Undo2, X } from "lucide-react";
+import { Check, Copy, Loader2, Minus, Pencil, Plus, QrCode, Redo2, RotateCcw, RotateCw, Save, Trash2, Undo2, X } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Field, inputClass } from "@/components/ui/field";
 import { useLayout, useLiveFloor, useSaveLayout } from "@/hooks/queries";
@@ -23,6 +23,8 @@ import {
 } from "@/lib/floor";
 import { formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { AllTableQrSheet } from "@/components/pages/table/qr/AllTableQrSheet";
+import { TableQrDialog } from "@/components/pages/table/qr/TableQrDialog";
 import type { Floor, FloorTable, Layout, LiveTable, TableShape } from "@/types/api";
 
 // Konva draws to a <canvas>, which only exists in the browser.
@@ -94,6 +96,9 @@ export default function FloorPlan() {
   const [saved, setSaved] = useState<string>("");
   const [floorId, setFloorId] = useState<string>("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Table QR codes: one table's card, or the sheet with every table.
+  const [qrTableId, setQrTableId] = useState<string | null>(null);
+  const [qrSheetOpen, setQrSheetOpen] = useState(false);
   const [floorInput, setFloorInput] = useState<{ mode: "add" } | { mode: "rename"; id: string } | null>(null);
   const [floorName, setFloorName] = useState("");
   const [floorToDelete, setFloorToDelete] = useState<Floor | null>(null);
@@ -351,6 +356,13 @@ export default function FloorPlan() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setQrSheetOpen(true)}
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+          >
+            <QrCode className="h-4 w-4" /> QR codes
+          </button>
           <div role="group" aria-label="View" className="inline-flex rounded-xl bg-gray-100 p-1">
             {(["edit", "live"] as const).map((m) => (
               <button
@@ -692,6 +704,14 @@ export default function FloorPlan() {
                     </Field>
                   )}
 
+                  <button
+                    type="button"
+                    onClick={() => setQrTableId(selected.id)}
+                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-teal/10 text-sm font-semibold text-teal-deep transition hover:bg-teal/15"
+                  >
+                    <QrCode className="h-4 w-4" /> Table QR code
+                  </button>
+
                   <div className="flex gap-2 border-t border-gray-100 pt-4">
                     <button
                       type="button"
@@ -737,6 +757,13 @@ export default function FloorPlan() {
                     />
                   )}
                 </dl>
+                <button
+                  type="button"
+                  onClick={() => setQrTableId(liveSelected.id)}
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-teal/10 text-sm font-semibold text-teal-deep transition hover:bg-teal/15"
+                >
+                  <QrCode className="h-4 w-4" /> Table QR code
+                </button>
               </div>
             ) : (
               <div className="py-6 text-center">
@@ -756,6 +783,16 @@ export default function FloorPlan() {
         destructive
         onCancel={() => setFloorToDelete(null)}
         onConfirm={() => floorToDelete && deleteFloor(floorToDelete)}
+      />
+
+      <TableQrDialog tableId={qrTableId} tableName={layout.tables.find((t) => t.id === qrTableId)?.name} onClose={() => setQrTableId(null)} />
+      <AllTableQrSheet
+        open={qrSheetOpen}
+        onClose={() => setQrSheetOpen(false)}
+        onOpenTable={(id) => {
+          setQrSheetOpen(false);
+          setQrTableId(id);
+        }}
       />
 
       {/* Kept for screen readers and tests: the logical drawing size. */}
