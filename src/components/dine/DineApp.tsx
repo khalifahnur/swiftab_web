@@ -9,7 +9,9 @@ import {
   ChefHat,
   ChevronRight,
   Clock,
+  Copy,
   CreditCard,
+  Link2,
   Loader2,
   MapPin,
   Minus,
@@ -17,12 +19,15 @@ import {
   QrCode,
   ReceiptText,
   Search,
+  Share2,
   ShoppingBag,
   Smartphone,
+  UserPlus,
   UtensilsCrossed,
   Users,
   X,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
@@ -35,8 +40,11 @@ import {
   paymentKey,
   placeOrder,
   requestBill,
+  shareTab,
+  stopTab,
   type DineItem,
   type DineOrder,
+  type DineTab,
   type DineVisit,
 } from "@/lib/dineApi";
 import { formatKes, formatTime } from "@/lib/format";
@@ -50,7 +58,7 @@ import { cn } from "@/lib/utils";
 
 const storageKey = (restaurantId: string, tableId: string) => `swiftab-visit:${restaurantId}:${tableId}`;
 
-function readToken(key: string): string | null {
+export function readToken(key: string): string | null {
   try {
     return window.localStorage.getItem(key);
   } catch {
@@ -58,7 +66,7 @@ function readToken(key: string): string | null {
   }
 }
 
-function writeToken(key: string, token: string | null) {
+export function writeToken(key: string, token: string | null) {
   try {
     if (token) window.localStorage.setItem(key, token);
     else window.localStorage.removeItem(key);
@@ -101,7 +109,7 @@ export default function DineApp({ restaurantId, tableId, code }: { restaurantId:
   );
 }
 
-function FullScreenLoader({ label = "Loading…" }: { label?: string }) {
+export function FullScreenLoader({ label = "Loading…" }: { label?: string }) {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-3 text-sm text-gray-500">
       <Loader2 className="h-6 w-6 animate-spin text-teal" />
@@ -110,7 +118,7 @@ function FullScreenLoader({ label = "Loading…" }: { label?: string }) {
   );
 }
 
-function Problem({ title, message, action }: { title: string; message: string; action?: React.ReactNode }) {
+export function Problem({ title, message, action }: { title: string; message: string; action?: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center px-8 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-teal/10">
@@ -123,7 +131,7 @@ function Problem({ title, message, action }: { title: string; message: string; a
   );
 }
 
-function Hero({ image, name, children }: { image?: string; name: string; children?: React.ReactNode }) {
+export function Hero({ image, name, eyebrow = "Welcome to", children }: { image?: string; name: string; eyebrow?: string; children?: React.ReactNode }) {
   return (
     <div className="relative h-56 overflow-hidden bg-teal-deep">
       {image && (
@@ -132,7 +140,7 @@ function Hero({ image, name, children }: { image?: string; name: string; childre
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/75" />
       <div className="absolute inset-x-0 bottom-0 px-5 pb-12 text-white">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">Welcome to</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">{eyebrow}</p>
         <h1 className="mt-1 text-[26px] font-bold leading-tight">{name}</h1>
         {children}
       </div>
@@ -326,7 +334,29 @@ const STATUS: Record<DineOrder["status"], { label: string; tone: string; hint: s
   cancelled: { label: "Cancelled", tone: "bg-rose-50 text-rose-700", hint: "This order was cancelled." },
 };
 
-function Visit({ token, onEnd }: { token: string; onEnd: () => void }) {
+/** How each status reads to a friend ordering on someone else's tab. */
+function friendHint(status: DineOrder["status"], host: string): string {
+  switch (status) {
+    case "placed":
+      return "The kitchen has your dishes.";
+    case "served":
+      return `Enjoy! ${host} settles the bill.`;
+    case "ready_to_pay":
+      return `${host} has asked for the bill.`;
+    case "completed":
+      return `All settled. Thanks for joining ${host}!`;
+    default:
+      return STATUS[status]?.hint ?? "";
+  }
+}
+
+/**
+ * A seated visit: the menu, the cart and the orders. The host (whoever
+ * checked in or booked) can share the menu; friends who join through that
+ * link see the same screens, but their dishes go on the host's bill and only
+ * the host asks for it.
+ */
+export function Visit({ token, onEnd }: { token: string; onEnd: () => void }) {
   const client = useQueryClient();
   const visit = useQuery({
     queryKey: ["dine-visit", token],
@@ -340,6 +370,7 @@ function Visit({ token, onEnd }: { token: string; onEnd: () => void }) {
   const [tab, setTab] = useState<"menu" | "orders">("menu");
   const [cart, setCart] = useState<Record<string, Line>>({});
   const [cartOpen, setCartOpen] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   // A rejected visit token means the visit is over: back to check-in.
   useEffect(() => {
@@ -379,7 +410,8 @@ function Visit({ token, onEnd }: { token: string; onEnd: () => void }) {
       setCart({});
       setCartOpen(false);
       setTab("orders");
-      toast.success("Order sent to the kitchen");
+      const you = visit.data?.you;
+      toast.success(you?.role === "friend" ? `Added to ${you.host}'s tab` : "Order sent to the kitchen");
       refresh();
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Could not place the order."),
@@ -401,6 +433,8 @@ function Visit({ token, onEnd }: { token: string; onEnd: () => void }) {
   }
 
   const data = visit.data;
+  const friend = data.you?.role === "friend" ? data.you : null;
+  const sharedWith = data.tab?.open ? data.tab.guests.length : 0;
   const lines = Object.values(cart);
   const count = lines.reduce((n, l) => n + l.quantity, 0);
   const total = lines.reduce((n, l) => n + l.quantity * l.item.cost, 0);
@@ -433,10 +467,23 @@ function Visit({ token, onEnd }: { token: string; onEnd: () => void }) {
             <p className="truncate text-[15px] font-semibold">{data.restaurant.name}</p>
             <p className="truncate text-[12.5px] text-gray-500">
               Table {data.table.name}
-              {data.table.floor ? ` · ${data.table.floor}` : ""}
-              {data.visit.name ? ` · ${data.visit.name}` : ""}
+              {friend ? ` · on ${friend.host}'s tab` : `${data.table.floor ? ` · ${data.table.floor}` : ""}${data.visit.name ? ` · ${data.visit.name}` : ""}`}
             </p>
           </div>
+          {!friend && data.tab && (data.visit.open || data.tab.open) && (
+            <button
+              type="button"
+              onClick={() => setSharing(true)}
+              aria-label={data.tab.open ? `Shared tab, ${sharedWith} joined` : "Share the menu with friends"}
+              className={cn(
+                "relative flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[12.5px] font-semibold transition",
+                data.tab.open ? "bg-teal text-white" : "bg-teal/10 text-teal-deep hover:bg-teal/15",
+              )}
+            >
+              {data.tab.open ? <Users className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+              {data.tab.open ? sharedWith : "Share"}
+            </button>
+          )}
           <button type="button" onClick={onEnd} className="shrink-0 rounded-lg px-2 py-1 text-[12px] font-semibold text-gray-500 hover:bg-gray-100">
             Not you?
           </button>
@@ -445,7 +492,7 @@ function Visit({ token, onEnd }: { token: string; onEnd: () => void }) {
           {(
             [
               ["menu", "Menu", null],
-              ["orders", "My order", openOrders || null],
+              ["orders", friend ? "My dishes" : "My order", openOrders || null],
             ] as const
           ).map(([id, label, badge]) => (
             <button
@@ -471,17 +518,50 @@ function Visit({ token, onEnd }: { token: string; onEnd: () => void }) {
       {!data.visit.open && (
         <div className="mx-4 mt-4 rounded-2xl bg-white p-4 text-center shadow-sm">
           <p className="text-[15px] font-semibold">Thanks for dining with us</p>
-          <p className="mt-1 text-[13px] text-gray-500">This visit is closed. Scan the table&apos;s code again to start a new one.</p>
-          <button type="button" onClick={onEnd} className="mt-3 h-10 rounded-xl bg-teal px-4 text-[13px] font-semibold text-white">
-            Start a new visit
-          </button>
+          {friend ? (
+            <p className="mt-1 text-[13px] text-gray-500">{friend.host}&apos;s booking has ended, so nothing more can be added to the tab.</p>
+          ) : (
+            <>
+              <p className="mt-1 text-[13px] text-gray-500">This visit is closed. Scan the table&apos;s code again to start a new one.</p>
+              <button type="button" onClick={onEnd} className="mt-3 h-10 rounded-xl bg-teal px-4 text-[13px] font-semibold text-white">
+                Start a new visit
+              </button>
+            </>
+          )}
         </div>
+      )}
+
+      {tab === "menu" && friend && data.visit.open && (
+        <div className="mx-4 mt-4 flex items-center gap-3 rounded-2xl bg-[#0B3B36] p-3.5 text-white">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
+            <Users className="h-4 w-4" />
+          </span>
+          <p className="text-[13px] leading-snug">
+            Hi {friend.name.split(" ")[0]}! Anything you order goes on <span className="font-semibold">{friend.host}&apos;s tab</span> for table {data.table.name}.
+          </p>
+        </div>
+      )}
+      {tab === "menu" && !friend && data.tab && !data.tab.open && data.visit.open && data.tab.canShare && (
+        <button
+          type="button"
+          onClick={() => setSharing(true)}
+          className="mx-4 mt-4 flex w-[calc(100%-2rem)] items-center gap-3 rounded-2xl border border-teal/20 bg-white p-3.5 text-left shadow-sm transition hover:border-teal/40"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal/10">
+            <UserPlus className="h-4 w-4 text-teal" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[13.5px] font-semibold">Dining with friends?</span>
+            <span className="block text-[12.5px] text-gray-500">Share the menu so they can order on your tab.</span>
+          </span>
+          <ChevronRight className="h-4 w-4 text-gray-400" />
+        </button>
       )}
 
       {tab === "menu" ? (
         <MenuView sections={menu.data} loading={menu.isPending} error={menu.isError} cart={cart} onAdd={add} onRemove={remove} canOrder={data.visit.open} />
       ) : (
-        <OrdersView data={data} token={token} onChanged={refresh} onBrowse={() => setTab("menu")} />
+        <OrdersView data={data} token={token} onChanged={refresh} onBrowse={() => setTab("menu")} host={friend?.host} />
       )}
 
       {count > 0 && data.visit.open && (
@@ -503,7 +583,8 @@ function Visit({ token, onEnd }: { token: string; onEnd: () => void }) {
         <CartSheet
           lines={lines}
           total={total}
-          tableName={data.table.name}
+          subtitle={friend ? `Goes on ${friend.host}'s tab · Table ${data.table.name}` : `Table ${data.table.name}`}
+          footnote={friend ? `${friend.host} pays the bill at the end. You can see what you ordered under My dishes.` : "You pay at the table when you are done."}
           busy={order.isPending}
           onClose={() => setCartOpen(false)}
           onAdd={add}
@@ -512,6 +593,8 @@ function Visit({ token, onEnd }: { token: string; onEnd: () => void }) {
           onSubmit={() => order.mutate()}
         />
       )}
+
+      {sharing && data.tab && <ShareSheet tab={data.tab} token={token} restaurant={data.restaurant.name} onClose={() => setSharing(false)} onChanged={refresh} />}
     </div>
   );
 }
@@ -671,7 +754,8 @@ function MenuView({
 function CartSheet({
   lines,
   total,
-  tableName,
+  subtitle,
+  footnote,
   busy,
   onClose,
   onAdd,
@@ -681,7 +765,8 @@ function CartSheet({
 }: {
   lines: Line[];
   total: number;
-  tableName: string;
+  subtitle: string;
+  footnote: string;
   busy: boolean;
   onClose: () => void;
   onAdd: (item: DineItem) => void;
@@ -697,7 +782,7 @@ function CartSheet({
         <div className="mt-3 flex items-center justify-between">
           <div>
             <p className="text-[17px] font-semibold">Your order</p>
-            <p className="text-[12.5px] text-gray-500">Table {tableName}</p>
+            <p className="text-[12.5px] text-gray-500">{subtitle}</p>
           </div>
           <button type="button" aria-label="Close" onClick={onClose} disabled={busy} className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
             <X className="h-4 w-4" />
@@ -736,7 +821,7 @@ function CartSheet({
           <span className="text-[14px] text-gray-500">Total</span>
           <span className="text-[20px] font-bold">{formatKes(total)}</span>
         </div>
-        <p className="mt-1 text-[12px] text-gray-500">You pay at the table when you are done.</p>
+        <p className="mt-1 text-[12px] text-gray-500">{footnote}</p>
         <button
           type="button"
           onClick={onSubmit}
@@ -765,7 +850,20 @@ const METHOD_LOOK: Record<string, { label: string; icon: typeof Banknote }> = {
   airtel_money: { label: "Airtel Money", icon: Smartphone },
 };
 
-function OrdersView({ data, token, onChanged, onBrowse }: { data: DineVisit; token: string; onChanged: () => void; onBrowse: () => void }) {
+function OrdersView({
+  data,
+  token,
+  onChanged,
+  onBrowse,
+  host,
+}: {
+  data: DineVisit;
+  token: string;
+  onChanged: () => void;
+  onBrowse: () => void;
+  /** Set when a friend is looking: the host's name. */
+  host?: string;
+}) {
   const [paying, setPaying] = useState<DineOrder | null>(null);
   const accepted = Array.from(new Set(data.restaurant.paymentMethods.map(paymentKey))).filter((m) => METHOD_LOOK[m]);
   const methods = accepted.length ? accepted : Object.keys(METHOD_LOOK);
@@ -786,7 +884,9 @@ function OrdersView({ data, token, onChanged, onBrowse }: { data: DineVisit; tok
           <ShoppingBag className="h-7 w-7 text-teal" />
         </div>
         <p className="mt-4 text-[15px] font-semibold">Nothing ordered yet</p>
-        <p className="mt-1 text-[13px] text-gray-500">Pick something from the menu and follow it here from kitchen to table.</p>
+        <p className="mt-1 text-[13px] text-gray-500">
+          {host ? `Pick something from the menu. It goes on ${host}'s tab and you can follow it here.` : "Pick something from the menu and follow it here from kitchen to table."}
+        </p>
         <button type="button" onClick={onBrowse} className="mt-5 h-11 rounded-xl bg-teal px-5 text-sm font-semibold text-white">
           Browse the menu
         </button>
@@ -831,14 +931,19 @@ function OrdersView({ data, token, onChanged, onBrowse }: { data: DineVisit; tok
                 })}
               </div>
             )}
-            <p className="mt-3 text-[12.5px] text-gray-600">{s.hint}</p>
+            <p className="mt-3 text-[12.5px] text-gray-600">{host ? friendHint(o.status, host) : s.hint}</p>
 
             <div className="mt-3 space-y-1.5 border-t border-gray-100 pt-3">
               {o.items.map((item, idx) => (
                 <div key={`${item._id}-${idx}`} className="text-[13.5px]">
                   <div className="flex gap-2">
                     <span className="w-6 font-semibold text-teal-deep">{item.quantity}×</span>
-                    <span className="flex-1">{item.name}</span>
+                    <span className="flex-1">
+                      {item.name}
+                      {!host && item.addedBy && (
+                        <span className="ml-1.5 inline-flex rounded-full bg-teal/10 px-1.5 text-[11px] font-semibold leading-[18px] text-teal-deep">{item.addedBy}</span>
+                      )}
+                    </span>
                     <span className="tabular-nums text-gray-700">{formatKes(item.cost * (item.quantity ?? 1))}</span>
                   </div>
                   {item.note && <p className="ml-8 text-[12px] text-gray-500">{item.note}</p>}
@@ -851,12 +956,14 @@ function OrdersView({ data, token, onChanged, onBrowse }: { data: DineVisit; tok
                   ? `Paid${o.paymentMethod ? ` · ${METHOD_LOOK[o.paymentMethod]?.label ?? o.paymentMethod}` : ""}`
                   : o.paymentMethod
                     ? `Paying by ${METHOD_LOOK[o.paymentMethod]?.label ?? o.paymentMethod}`
-                    : "Total"}
+                    : host
+                      ? "Your dishes"
+                      : "Total"}
               </span>
               <span className="text-[17px] font-bold">{formatKes(o.totalAmount)}</span>
             </div>
 
-            {o.status === "served" && (
+            {!host && o.status === "served" && (
               <button
                 type="button"
                 onClick={() => setPaying(o)}
@@ -865,7 +972,7 @@ function OrdersView({ data, token, onChanged, onBrowse }: { data: DineVisit; tok
                 <CreditCard className="h-4 w-4" /> Ask for the bill
               </button>
             )}
-            {o.status === "placed" && (
+            {!host && o.status === "placed" && (
               <button
                 type="button"
                 disabled={cancel.isPending}
@@ -957,6 +1064,166 @@ function BillSheet({ order, methods, token, onClose, onDone }: { order: DineOrde
           {bill.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           {method ? "Request the bill" : "Choose how to pay"}
         </button>
+      </div>
+    </div>
+  );
+}
+
+// --- Sharing the tab --------------------------------------------------------------
+
+/** Lets the host send friends a link to order on their tab, and see who did. */
+function ShareSheet({ tab, token, restaurant, onClose, onChanged }: { tab: DineTab; token: string; restaurant: string; onClose: () => void; onChanged: () => void }) {
+  const [confirmStop, setConfirmStop] = useState(false);
+  const client = useQueryClient();
+  const change = useMutation({
+    mutationFn: (open: boolean) => (open ? shareTab(token) : stopTab(token)),
+    onSuccess: (next, open) => {
+      client.setQueryData<DineVisit>(["dine-visit", token], (v) => (v ? { ...v, tab: next } : v));
+      setConfirmStop(false);
+      if (!open) toast.success("Sharing stopped. The old link no longer works.");
+      onChanged();
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "That did not work."),
+  });
+
+  const message = `Join my table at ${restaurant} on Swiftab and order whatever you like. It goes on my tab:`;
+  const share = async () => {
+    if (!tab.url) return;
+    const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
+    if (nav.share) {
+      try {
+        await nav.share({ title: `Order at ${restaurant}`, text: message, url: tab.url });
+        return;
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+      }
+    }
+    copy();
+  };
+  const copy = async () => {
+    if (!tab.url) return;
+    try {
+      await navigator.clipboard.writeText(tab.url);
+      toast.success("Link copied");
+    } catch {
+      toast.error("Copy the link by pressing and holding it.");
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-end justify-center" role="dialog" aria-modal aria-label="Share your tab">
+      <button type="button" aria-label="Close" onClick={change.isPending ? undefined : onClose} className="absolute inset-0 bg-black/45" />
+      <div className="relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-3">
+        <div className="mx-auto h-1.5 w-10 rounded-full bg-gray-200" />
+        <div className="mt-3 flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[17px] font-semibold">{tab.open ? "Your tab is shared" : "Share the menu"}</p>
+            <p className="mt-0.5 text-[12.5px] leading-relaxed text-gray-500">
+              Friends open the link, add their name and order. Everything goes on your bill, marked with who ordered it.
+            </p>
+          </div>
+          <button type="button" aria-label="Close" onClick={onClose} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {tab.open && tab.url ? (
+          <>
+            <div className="mt-4 flex items-center gap-4 rounded-2xl bg-[#F4F7F6] p-3.5">
+              <div className="rounded-xl bg-white p-2 shadow-sm">
+                <QRCodeSVG value={tab.url} size={96} level="M" marginSize={0} fgColor="#0B3B36" aria-label="QR code for your tab link" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-semibold">At the same table?</p>
+                <p className="text-[12px] leading-relaxed text-gray-500">Friends can scan this with their camera.</p>
+                <p className="mt-1.5 flex items-center gap-1 truncate text-[12px] font-medium text-teal-deep">
+                  <Link2 className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{tab.url.replace(/^https?:\/\//, "")}</span>
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button type="button" onClick={share} className="flex h-11 items-center justify-center gap-2 rounded-xl bg-teal text-[14px] font-semibold text-white">
+                <Share2 className="h-4 w-4" /> Send link
+              </button>
+              <button type="button" onClick={copy} className="flex h-11 items-center justify-center gap-2 rounded-xl bg-teal/10 text-[14px] font-semibold text-teal-deep">
+                <Copy className="h-4 w-4" /> Copy
+              </button>
+            </div>
+
+            <div className="mt-5">
+              <p className="text-[13px] font-semibold text-gray-700">
+                Joined · {tab.guests.length}
+                <span className="font-normal text-gray-400"> of {tab.maxGuests}</span>
+              </p>
+              {tab.guests.length === 0 ? (
+                <p className="mt-2 rounded-xl border border-dashed border-gray-200 px-3.5 py-3 text-[12.5px] text-gray-500">No one has joined yet. You will see each friend here with what they ordered.</p>
+              ) : (
+                <ul className="mt-2 divide-y divide-gray-100 rounded-xl border border-gray-100">
+                  {tab.guests.map((g) => (
+                    <li key={g.id} className="flex items-center gap-3 px-3.5 py-2.5">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal/10 text-[12px] font-bold uppercase text-teal-deep">{g.name.slice(0, 2)}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[13.5px] font-semibold">{g.name}</span>
+                        <span className="block text-[12px] text-gray-500">{g.items ? `${g.items} item${g.items === 1 ? "" : "s"}` : "Browsing the menu"}</span>
+                      </span>
+                      <span className="text-[13.5px] font-semibold tabular-nums">{g.total ? formatKes(g.total) : ""}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {confirmStop ? (
+              <div className="mt-4 rounded-xl bg-rose-50 p-3.5">
+                <p className="text-[13px] leading-relaxed text-rose-800">Stop sharing? Friends can no longer add anything. What they already ordered stays on your bill.</p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button type="button" onClick={() => setConfirmStop(false)} className="h-10 rounded-lg bg-white text-[13px] font-semibold text-gray-700">
+                    Keep sharing
+                  </button>
+                  <button
+                    type="button"
+                    disabled={change.isPending}
+                    onClick={() => change.mutate(false)}
+                    className="flex h-10 items-center justify-center gap-2 rounded-lg bg-rose-600 text-[13px] font-semibold text-white disabled:opacity-60"
+                  >
+                    {change.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Stop sharing
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button type="button" onClick={() => setConfirmStop(true)} className="mt-4 h-10 w-full rounded-xl text-[13.5px] font-semibold text-rose-600 hover:bg-rose-50">
+                Stop sharing
+              </button>
+            )}
+          </>
+        ) : (
+          <>
+            <ul className="mt-4 space-y-2.5 text-[13px] text-gray-600">
+              {[
+                ["Send the link", "by WhatsApp, SMS, or let friends at the table scan it."],
+                ["They pick their dishes", "and enter their name. No app or account needed."],
+                ["You stay in control", "see who ordered what and stop sharing at any time."],
+              ].map(([title, text], i) => (
+                <li key={title} className="flex gap-3">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-[12px] font-bold text-white">{i + 1}</span>
+                  <span>
+                    <span className="font-semibold text-gray-800">{title}</span> {text}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              disabled={change.isPending || !tab.canShare}
+              onClick={() => change.mutate(true)}
+              className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-teal text-[15px] font-semibold text-white disabled:opacity-50"
+            >
+              {change.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+              {tab.canShare ? "Create share link" : "This visit has ended"}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

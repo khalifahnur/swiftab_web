@@ -34,6 +34,9 @@ export interface DineItem {
   tags?: string[];
   prepTime?: number;
   available?: boolean;
+  /** Who added the line, when a friend ordered it on a shared tab. */
+  addedBy?: string;
+  addedById?: string;
 }
 
 export interface DineOrder {
@@ -50,6 +53,28 @@ export interface DineOrder {
   waiter?: string;
 }
 
+export interface TabGuest {
+  id: string;
+  name: string;
+  joinedAt: string;
+  items: number;
+  total: number;
+}
+
+/** The host's share link and the friends who joined through it. */
+export interface DineTab {
+  open: boolean;
+  canShare: boolean;
+  url?: string;
+  code?: string;
+  openedAt?: string;
+  guests: TabGuest[];
+  maxGuests: number;
+}
+
+/** Who is looking: the person seated, or a friend ordering on their tab. */
+export type DineYou = { role: "host"; name: string } | { role: "friend"; id: string; name: string; host: string };
+
 export interface DineVisit {
   restaurant: DineRestaurant;
   table: DineTable;
@@ -62,7 +87,23 @@ export interface DineVisit {
     until: string;
     open: boolean;
   };
+  you?: DineYou;
+  /** Only sent to the host. */
+  tab?: DineTab;
   orders: DineOrder[];
+}
+
+export interface TabPreview {
+  restaurant: DineRestaurant;
+  host: string;
+  table: string;
+  floor?: string;
+  since: string;
+  until: string;
+  status: string;
+  canJoin: boolean;
+  guests: number;
+  full: boolean;
 }
 
 export interface MenuSection {
@@ -132,6 +173,15 @@ export const requestBill = (token: string, orderId: string, paymentMethod: strin
 
 export const cancelOrder = (token: string, orderId: string) =>
   call<{ message: string }>(`/dine/visit/orders/${orderId}/cancel`, { method: "PUT", token });
+
+export const shareTab = (token: string) => call<DineTab>("/dine/visit/tab", { method: "POST", token });
+
+export const stopTab = (token: string) => call<DineTab>("/dine/visit/tab", { method: "DELETE", token });
+
+export const fetchTabPreview = (code: string) => call<TabPreview>(`/tab/${encodeURIComponent(code)}`);
+
+export const joinTab = (code: string, name: string) =>
+  call<DineVisit & { token: string }>(`/tab/${encodeURIComponent(code)}/join`, { method: "POST", body: JSON.stringify({ name }) });
 
 /** Payment methods as the API names them, from whatever the restaurant saved. */
 export function paymentKey(method: string): string {
